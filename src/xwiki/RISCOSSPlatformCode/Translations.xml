@@ -31,9 +31,9 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1396803391000</creationDate>
-  <date>1397417250000</date>
-  <contentUpdateDate>1397417250000</contentUpdateDate>
+  <creationDate>0</creationDate>
+  <date>0</date>
+  <contentUpdateDate>0</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <defaultTemplate/>
@@ -81,6 +81,7 @@
 riscossPlatform.domain=Domain
 riscossPlatform.domainManager=Domain Manager
 riscossPlatform.createForm.valueRequired=Value required
+riscossPlatform.createForm.alreadyExistingItem=An item with this name already exists. Choose another name
 riscossPlatform.adminUsers=Administer users
 riscossPlatform.adminUsers.title=User administration
 riscossPlatform.adminRoles=Administer roles</content>

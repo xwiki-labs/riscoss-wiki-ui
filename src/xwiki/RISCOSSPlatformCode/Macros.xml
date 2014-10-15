@@ -31,9 +31,9 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1397331147000</creationDate>
-  <date>1398096341000</date>
-  <contentUpdateDate>1398093873000</contentUpdateDate>
+  <creationDate>0</creationDate>
+  <date>0</date>
+  <contentUpdateDate>0</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <defaultTemplate/>
@@ -52,7 +52,7 @@
 #end
 
 #macro(generateCustomCreateDialogLink $params)
-  [[${params.get('linkLabel')}&gt;&gt;RISCOSSPlatformCode.CustomCreate||queryString="xpage=plain&amp;action=${params.get('action')}&amp;fieldLabel=${params.get('fieldLabel')}" class="openDialog" title="${params.get('dialogTitle')}" callback="XWiki.RISCOSSPlatform.initializeCreateDialog"]]
+  [[${params.get('linkLabel')}&gt;&gt;RISCOSSPlatformCode.CustomCreate||queryString="xpage=plain&amp;action=${params.get('action')}&amp;space=${params.get('space')}&amp;fieldLabel=${params.get('fieldLabel')}" class="openDialog" title="${params.get('dialogTitle')}" callback="XWiki.RISCOSSPlatform.initializeCreateDialog"]]
 #end
 
 {{/velocity}}</content>

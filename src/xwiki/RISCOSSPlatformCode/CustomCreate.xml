@@ -31,9 +31,9 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1398093620000</creationDate>
-  <date>1398094663000</date>
-  <contentUpdateDate>1398093705000</contentUpdateDate>
+  <creationDate>0</creationDate>
+  <date>0</date>
+  <contentUpdateDate>0</contentUpdateDate>
   <version>1.1</version>
   <title>#if($request.formTitle) $request.formTitle #else Create #end</title>
   <defaultTemplate/>
@@ -195,6 +195,7 @@
 #else
 {{html}}
 &lt;form action="$request.action" method="POST" class="xform third createForm"&gt;
+  &lt;input type="hidden" name="targetSpace" value="$request.space" class="targetSpace"/&gt;
   &lt;dl&gt;
     &lt;dt&gt;&lt;label for="page"&gt;$request.fieldLabel&lt;/label&gt;&lt;dt&gt;
     &lt;dd&gt;&lt;input type="text" name="targetName" class="targetName"/&gt;&lt;/dd&gt;

@@ -20,21 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.1">
+<xwikidoc>
   <web>RISCOSSPlatformRiskAnalysisManagerCode</web>
   <name>Evaluate</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
-  <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1402851107000</creationDate>
   <parent>RISCOSSPlatformRiskAnalysisManagerCode.WebHome</parent>
+  <creator>xwiki:XWiki.Admin</creator>
   <author>xwiki:XWiki.Admin</author>
+  <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1402920802000</date>
-  <contentUpdateDate>1402920802000</contentUpdateDate>
+  <creationDate>0</creationDate>
+  <date>0</date>
+  <contentUpdateDate>0</contentUpdateDate>
   <version>1.1</version>
   <title>Evaluate '$request.entity'</title>
+  <defaultTemplate/>
+  <validationScript/>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
@@ -44,16 +47,19 @@
   {{error}} Missing parameters {{/error}}
 #else
   ## Load all the models associated to the layer of the entity under analysis.
-  #set($riskAnalysisSessionDocument = $xwiki.getDocument($request.riskAnalysisSession))
-  #set($entityDocument = $xwiki.getDocument($request.entity))
+  #set($riskAnalysisSessionDocument = $xwiki.getDocument($request.riskAnalysisSession))  
+  #set($entityDocument = $xwiki.getDocument($request.entity))   
   #set($layer = $entityDocument.getObject("RISCOSSPlatformLayerManagerCode.EntityClass").getProperty("layer").value)
   #set($rdids = $entityDocument.getObject("RISCOSSPlatformLayerManagerCode.EntityClass").getProperty("rdids").value)
   #set($riskConfigurationDocument = $xwiki.getDocument($request.riskConfiguration))
   #set($raeUtils = $services.riscoss.riskAnalysisEngineUtilsService)
   #set($rae = $services.riscoss.riskAnalysisEngineService.createInstance())
-  #set($riskModels = $riskConfigurationDocument.getObjects("RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass", "layer", $layer))
-  #foreach($riskModel in $riskModels)
-    #set($riskModelData = $riskConfigurationDocument.getAttachment($riskModel.getProperty("data").value).getContentAsString())
+  #set($riskModelReferences = $riskConfigurationDocument.getObjects("RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass", "layer", $layer))
+  
+  #foreach($riskModelReference in $riskModelReferences)
+    #set($riskModelDocumentName = $riskModelReference.getProperty("riskModel").value)
+    #set($riskModelDocument = $xwiki.getDocument($riskModelDocumentName))
+    #set($riskModelData = $riskModelDocument.getAttachment($riskModelDocument.get("riskModelData")).getContentAsString())
     $rae.loadModel($riskModelData)
   #end
   

@@ -65,6 +65,27 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
     </command>
+    <dataType>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>dataType</name>
+      <number>3</number>
+      <picker>0</picker>
+      <prettyName>dataType</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators> ,|</separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>NUMBER|EVIDENCE|DISTRIBUTION</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </dataType>
     <name>
       <customDisplay/>
       <disabled>0</disabled>

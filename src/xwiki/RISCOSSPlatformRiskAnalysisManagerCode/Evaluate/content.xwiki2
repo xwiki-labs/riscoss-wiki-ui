@@ -1,22 +1,21 @@
 {{velocity}}
-## -*- Mode: Velocity -*- ## This helps gedit determine how to highlight the text
-##
 #if(!($request.entity && $request.riskConfiguration && $request.riskAnalysisSession))
   {{error}} Missing parameters {{/error}}
 #else
   ## Load all the models associated to the layer of the entity under analysis.
-  #set($riskAnalysisSessionDocument = $xwiki.getDocument($request.riskAnalysisSession))
-  #set($entityDocument = $xwiki.getDocument($request.entity))
+  #set($riskAnalysisSessionDocument = $xwiki.getDocument($request.riskAnalysisSession))  
+  #set($entityDocument = $xwiki.getDocument($request.entity))   
   #set($layer = $entityDocument.getObject("RISCOSSPlatformLayerManagerCode.EntityClass").getProperty("layer").value)
   #set($rdids = $entityDocument.getObject("RISCOSSPlatformLayerManagerCode.EntityClass").getProperty("rdids").value)
   #set($riskConfigurationDocument = $xwiki.getDocument($request.riskConfiguration))
   #set($raeUtils = $services.riscoss.riskAnalysisEngineUtilsService)
   #set($rae = $services.riscoss.riskAnalysisEngineService.createInstance())
-  #set($riskModels = $riskConfigurationDocument.getObjects("RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass", "layer", $layer))
-  #set($riskModelStrings = [])
-  #foreach($riskModel in $riskModels)
-    #set($riskModelData = $riskConfigurationDocument.getAttachment($riskModel.getProperty("data").value).getContentAsString())
-    $riskModelStrings.add($riskModelData)
+  #set($riskModelReferences = $riskConfigurationDocument.getObjects("RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass", "layer", $layer))
+  
+  #foreach($riskModelReference in $riskModelReferences)
+    #set($riskModelDocumentName = $riskModelReference.getProperty("riskModel").value)
+    #set($riskModelDocument = $xwiki.getDocument($riskModelDocumentName))
+    #set($riskModelData = $riskModelDocument.getAttachment($riskModelDocument.get("riskModelData")).getContentAsString())
     $rae.loadModel($riskModelData)
   #end
   
@@ -32,77 +31,25 @@
 
   ## If the page has been loaded for the first time, and not as a result of a evaluate submit, override the default values with the ones coming from the RDR (if any)
   #if(!$request.evaluate)
-
-    #set ($confDoc = $xwiki.getDocument('RISCOSSPlatformCode.RISCOSSConfig'))
-    #set ($conf = $confDoc.getObject('RISCOSSPlatformCode.RISCOSSConfig'))
-    #set ($rdrHost = $conf.getProperty('rdrHost').getValue())
-    #set ($rdrPort = $conf.getProperty('rdrPort').getValue())
-    #set ($rdrPath = $conf.getProperty('rdrPath').getValue().replaceAll("/$", ""))
-    #set ($url = "http://${rdrHost}:${rdrPort}/${rdrPath}")
-    $riskData.putAll($raeUtils.fetchRiskData($rae, "$url", $rdids))
+    $riskData.putAll($raeUtils.fetchRiskData($rae, "http://localhost:8080/rdr", $rdids))
   #end
-$errors
+
   ## If there was an evaluation request, and no errors are found in the data sent from the filled form, then perform the evaluation
   #if($request.evaluate && $errors.size() == 0)
-
-    #set ($params = {
-      "requestMap": $request.getParameterMap(),
-      "riskModels": $riskModelStrings
-    })
-
-    #set ($analyserAPI = $xwiki.parseGroovyFromPage("RISCOSSPlatformRiskAnalysisManagerCode.EvaluateGroovy"))
-    #set ($remoteAnalyzer = $analyserAPI.getRemoteAnalyzerPath($services))
-    #set ($ret = $services.commandRunner.run("java -jar $remoteAnalyzer", $jsontool.serialize($params), 30000))
-
-    #if("$ret.stdout.indexOf('-----BEGIN ANALYSIS OUTPUT-----')" == "-1"
-        || "$ret.stdout.indexOf('-----END ANALYSIS OUTPUT-----')" == "-1"
-        || "$ret.ret" != "0")
-
-        {{error}}
-            ret: $ret.ret
-            stdout: {{{ $ret.stdout }}}
-            stderr: {{{ $ret.stderr }}}
-        {{/error}}
-
-    #else
-        #set($stdout = $ret.stdout.split("-----BEGIN ANALYSIS OUTPUT-----")[1])
-        #set($stdout = $stdout.split("-----END ANALYSIS OUTPUT-----")[0])
-
-        #set($result = $analyserAPI.parseJSON($stdout))
-
-        #if ("$result.warnings" != "[]")
-
-            ## TODO: we can't display this here because the user is redirected
-            ##{{warning}} {{{ $result.warnings }}} {{/warning}}
-
-        #end
-        #if ("$ret.stderr" != "")
-
-            {{warning}} {{{ $ret.stderr }}} {{/warning}}
-
-        #end
-        #if ($result.opt("error"))
-
-            {{error}} {{{ $result.error }}} {{/error}}
-
-        #else
-
-            ## everything is ok, save the content...
-            #set($riskEvaluationObject = $riskAnalysisSessionDocument.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass", "riskConfiguration", $request.riskConfiguration))
-            #if(!$riskEvaluationObject) 
-              #set($n = $riskAnalysisSessionDocument.createObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass"))
-              #set($riskEvaluationObject = $riskAnalysisSessionDocument.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass", $n))
-            #end
-            
-            $riskEvaluationObject.set("riskConfiguration", $request.riskConfiguration)
-            $riskEvaluationObject.set("result", $result.result)
-
-            $riskAnalysisSessionDocument.save("Evaluation of ${request.riskConfiguration}")
-
-            ## and redirect the user...
-            $response.sendRedirect($riskAnalysisSessionDocument.getURL())
-        #end
+    $raeUtils.setRiskData($rae, $riskData)
+    #set($result = $raeUtils.runAnalysis($rae))
+ 
+    #set($riskEvaluationObject = $riskAnalysisSessionDocument.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass", "riskConfiguration", $request.riskConfiguration))
+    #if(!$riskEvaluationObject) 
+      #set($n = $riskAnalysisSessionDocument.createObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass"))
+      #set($riskEvaluationObject = $riskAnalysisSessionDocument.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass", $n))
     #end
+    
+    $riskEvaluationObject.set("riskConfiguration", $request.riskConfiguration)
+    $riskEvaluationObject.set("result", $jsontool.serialize($result))
+    $riskAnalysisSessionDocument.save("Evaluation of ${request.riskConfiguration}")
+    
+    $response.sendRedirect($riskAnalysisSessionDocument.getURL())
   #else
     #set($inputChunks = $services.riscoss.riskAnalysisEngineUtilsService.getInputs($rae))
 

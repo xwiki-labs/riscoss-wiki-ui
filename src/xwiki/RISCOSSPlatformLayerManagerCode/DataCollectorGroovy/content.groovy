@@ -1,54 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
--->
-
-<xwikidoc>
-  <web>RISCOSSPlatformLayerManagerCode</web>
-  <name>DataCollectorGroovy</name>
-  <language/>
-  <defaultLanguage/>
-  <translation>0</translation>
-  <parent>RISCOSSPlatformLayerManagerCode.WebHome</parent>
-  <creator>xwiki:XWiki.Admin</creator>
-  <author>xwiki:XWiki.Admin</author>
-  <customClass/>
-  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1410960970000</creationDate>
-  <date>1411374527000</date>
-  <contentUpdateDate>1411374527000</contentUpdateDate>
-  <version>1.1</version>
-  <title/>
-  <defaultTemplate/>
-  <validationScript/>
-  <comment/>
-  <minorEdit>false</minorEdit>
-  <syntaxId>xwiki/2.1</syntaxId>
-  <hidden>false</hidden>
-  <content>/*
+/* -*- Mode:Java
  * Groovy code for data collectors.
  */
+import org.json.JSONObject;
+import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.json.JSONObject;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.client.HttpClient;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 
 public class Ctx {
 
@@ -58,7 +22,7 @@ public class Ctx {
     final Object services;
     final Object xcontext;
     HashMap maybeRDRInfo;
-    final HashMap&lt;String, Long&gt; millisecondsByPeriod;
+    final HashMap<String, Long> millisecondsByPeriod;
 
     Ctx(Object xwiki, Object services, Object xcontext, HashMap millisecondsByPeriod) {
         this.xwiki = xwiki;
@@ -71,12 +35,12 @@ public class Ctx {
 private Ctx mkCtx(Object xwiki, Object services, Object xcontext)
 {
     return new Ctx(xwiki, services, xcontext,
-        new HashMap&lt;String, Long&gt;() {{
-            put("minutely", Long.valueOf(1000 * 60));
-            put("hourly",   Long.valueOf(1000 * 60 * 60));
-            put("daily",    Long.valueOf(1000 * 60 * 60 * 24));
-            put("weekly",   Long.valueOf(1000 * 60 * 60 * 24 * 7));
-            put("monthly",  Long.valueOf(1000 * 60 * 60 * 24 * 30));
+        new HashMap<String, Long>() {{
+            put("minutely", Long.valueOf(1000L * 60));
+            put("hourly",   Long.valueOf(1000L * 60 * 60));
+            put("daily",    Long.valueOf(1000L * 60 * 60 * 24));
+            put("weekly",   Long.valueOf(1000L * 60 * 60 * 24 * 7));
+            put("monthly",  Long.valueOf(1000L * 60 * 60 * 24 * 30));
         }});
 }
 
@@ -89,8 +53,8 @@ private Object getValue(Object obj, String name) {
 private HashMap getRDRInfo(Ctx ctx) {
     if (ctx.maybeRDRInfo == null) {
         def confDoc = ctx.xwiki.getDocument("RISCOSSPlatformCode.RISCOSSConfig");
-        def conf = confDoc.getObject('RISCOSSPlatformCode.RISCOSSConfig');
-        def outMap = new HashMap&lt;String, String&gt;();
+        def conf = confDoc.getObject("RISCOSSPlatformCode.RISCOSSConfig");
+        def outMap = new HashMap<String, String>();
         outMap.put("riscoss_rdrHost", conf.getProperty("rdrHost").getValue());
         outMap.put("riscoss_rdrPort", conf.getProperty("rdrPort").getValue());
         outMap.put("riscoss_rdrPath", conf.getProperty("rdrPath").getValue());
@@ -103,14 +67,14 @@ public class CmdReturn {
     String stdout = "";
     String stderr = "";
 
-    static final int retcode_TIMEOUT = (1&lt;&lt;31);
+    static final int retcode_TIMEOUT = (1<<31);
     int retcode;
 }
 
 
 private CmdReturn runCmd(Ctx ctx, String cmd, String stdin)
 {
-    System.out.println("debug: " + cmd + " &lt; " + stdin);
+    System.out.println("debug: " + cmd + " < " + stdin);
 
     final CmdReturn out = new CmdReturn();
     final AtomicInteger ai = new AtomicInteger(4);
@@ -143,11 +107,11 @@ private CmdReturn runCmd(Ctx ctx, String cmd, String stdin)
     while (ai.get() != 0) {
         Thread.sleep(10);
         waitMilliseconds += 10;
-        if (waitMilliseconds &gt; Ctx.COLLECTOR_TIMEOUT_MILLISECONDS) {
+        if (waitMilliseconds > Ctx.COLLECTOR_TIMEOUT_MILLISECONDS) {
             if (process[0] != null) {
                 process[0].destroy();
             }
-            System.out.println("warning: TIMEOUT " + cmd + " &lt; " + stdin);
+            System.out.println("warning: TIMEOUT " + cmd + " < " + stdin);
             out.retcode = CmdReturn.retcode_TIMEOUT;
             return out;
         }
@@ -155,11 +119,56 @@ private CmdReturn runCmd(Ctx ctx, String cmd, String stdin)
     return out;
 }
 
-private void runJob(Ctx ctx, Object doc, Object collectorConf) {
+private String mkPost(String value, Object collectorObj, String target)
+{
+    String collectorID = collectorObj.getProperty("name").getValue();
+    String collectorDataType = collectorObj.getProperty("dataType").getValue();
+
+    JSONObject post = new JSONObject();
+    post.put("id", collectorID);
+    post.put("type", collectorDataType);
+    post.put("target", target);
+    post.put("value", value);
+
+    JSONArray out = new JSONArray();
+    out.put(post);
+    return out.toString();
+}
+
+private int uploadToRDR(String value,
+                        String host,
+                        Long port,
+                        String path,
+                        Object collectorObj,
+                        String target) throws Exception
+{
+    String output = mkPost(value, collectorObj, target);
+    HttpClient client = HttpClientBuilder.create().build();
+    HttpPost request = new HttpPost("http://" + host + ":" + port + "" + path);
+    request.setEntity(new StringEntity(output));
+    HttpResponse response = client.execute(request);
+    int responseCode = response.getStatusLine().getStatusCode();
+    System.out.println("Response Code : " + responseCode);
+    BufferedReader rd = new BufferedReader(
+      new InputStreamReader(response.getEntity().getContent()));
+    StringBuffer result = new StringBuffer();
+    String line = "";
+    while ((line = rd.readLine()) != null) {
+        System.err.println(line);
+    }
+    if (responseCode < 200 || responseCode > 299) {
+        return responseCode;
+    }
+    return 0;
+}
+
+private void runJob(Ctx ctx, Object doc, Object collectorConf, scheduleConf) {
     def collectorDoc = ctx.xwiki.getDocument(collectorConf.getxWikiClass().getName());
     def collectorObj = collectorDoc.getObject("RISCOSSPlatformCode.DataCollector");
+    def entity = doc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass");
     String command = getValue(collectorObj, "command");
-    def out = new JSONObject(getRDRInfo(ctx));
+    Map rdrInfo = getRDRInfo(ctx);
+    def out = new JSONObject();
     for (String propName : collectorConf.getxWikiClass().getEnabledPropertyNames()) {
         out.put(propName, getValue(collectorConf, propName));
     }
@@ -167,6 +176,16 @@ private void runJob(Ctx ctx, Object doc, Object collectorConf) {
     System.out.println("debug: stdout: " + res.stdout);
     System.out.println("debug: stderr: " + res.stderr);
     System.out.println("debug: retcode: " + res.retcode);
+    if (res.retcode != 0) { return; }
+    if (uploadToRDR(res.stdout,
+                    rdrInfo.get("riscoss_rdrHost"),
+                    rdrInfo.get("riscoss_rdrPort"),
+                    rdrInfo.get("riscoss_rdrPath"),
+                    collectorObj,
+                    entity.getProperty("rdids").getValue()) == 0)
+    {
+        rescheduleJob(ctx, doc, scheduleConf);
+    }
 }
 
 private void rescheduleJob(Ctx ctx, Object doc, Object scheduleConf) {
@@ -185,15 +204,14 @@ private void runSchedule(Ctx ctx, Object doc, Object scheduleConf) {
             getValue(scheduleConf, "periodicity") + "]");
         return;
     }
-    if (System.currentTimeMillis() - timeLastRun &gt; milliseconds) {
+    if (System.currentTimeMillis() - timeLastRun > milliseconds) {
         Object collectorConf = doc.getObject(name);
         if (scheduleConf == null) {
             System.out.println("warning: [" + fullName + "] no object");
             return;
         }
         try {
-            runJob(ctx, doc, collectorConf);
-            rescheduleJob(ctx, doc, scheduleConf);
+            runJob(ctx, doc, collectorConf, scheduleConf);
         } catch (Exception e) {
             System.out.println("warning: error running [" + fullName + "]");
             e.printStackTrace();
@@ -207,7 +225,7 @@ private void runEntity(Ctx ctx, String docName) {
 
     def doc = ctx.xwiki.getDocument(docName);
     def scheduleConfs = doc.getObjects("RISCOSSPlatformLayerManagerCode.DataCollectorScheduler");
-    for (int i = 0; i &lt; scheduleConfs.size(); i++) {
+    for (int i = 0; i < scheduleConfs.size(); i++) {
         runSchedule(ctx, doc, scheduleConfs.get(i));
     }
 }
@@ -218,8 +236,7 @@ public void main(Object xcontext, Object services, Object xwiki) {
             "from doc.object('RISCOSSPlatformLayerManagerCode.DataCollectorScheduler') as sched"
         ).execute();
     def dox = new ArrayList();
-    for (int i = 0; i &lt; docNames.size(); i++) {
+    for (int i = 0; i < docNames.size(); i++) {
         runEntity(ctx, docNames.get(i));
     }
-}</content>
-</xwikidoc>
+}

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -117,5 +116,6 @@
 [[$services.localization.render("edit")&gt;&gt;$doc.getExternalURL("edit")]] | [[$services.localization.render("delete")&gt;&gt;$doc.getExternalURL("delete", "xredirect=${xredirect}")]]
 &lt;/span&gt;
 {{/html}}
-{{/velocity}}</content>
+{{/velocity}}
+{{include document="RISCOSSPlatformLayerManagerCode.DataCollectorManager" /}}</content>
 </xwikidoc>

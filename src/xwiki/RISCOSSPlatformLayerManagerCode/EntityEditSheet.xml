@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -208,5 +207,10 @@ $xwiki.jsx.use("RISCOSSPlatformLayerManagerCode.EntityEditSheet")
 
 ; $services.localization.render("riscossPlatform.layerManager.rdids")
 : $doc.display("rdids")
-{{/velocity}}</content>
+
+{{/velocity}}
+
+----
+
+{{include document="RISCOSSPlatformLayerManagerCode.DataCollectorManager" /}}</content>
 </xwikidoc>

@@ -1,0 +1,70 @@
+{{velocity output="false"}}##
+## -*- Mode:Velocity
+## Data Collector Configuration.
+##
+
+## Load the jsx which this code will send data to.
+$xwiki.jsx.use('RISCOSSPlatformLayerManagerCode.DataCollectorManager', {"minify":"false"})
+
+## The final output
+#set ($outConf = {})
+
+## URL for removing objects, used by the jsx
+#set ($removeDC = 'RISCOSSPlatformLayerManagerCode.RemoveDataCollector')
+$outConf.put("objRemoveURL", $xwiki.getURL($removeDC, 'get', "docName=$doc.getFullName()"))
+
+## List of data collectors
+#set ($collectors = [])
+$outConf.put("collectors", $collectors)
+
+#set ($schedulesList = $doc.getObjects("RISCOSSPlatformLayerManagerCode.DataCollectorScheduler"))
+#set ($schedulesMap = {})
+#foreach ($s in $schedulesList)
+  #if ("$!s.getProperty('collectorName')" != "")
+    $schedulesMap.put($s.getProperty("collectorName").getValue(), $s)
+  #end
+#end
+
+#if ("$schedulesList.size()" == "0")
+  $schedulesList.add($doc.newObject("RISCOSSPlatformLayerManagerCode.DataCollectorScheduler"))
+#end
+
+#set ($collectorDocNames =
+  $services.query.xwql('from doc.object(RISCOSSPlatformCode.DataCollector) as x').execute())
+#foreach($collectorName in $collectorDocNames)
+  #set ($collectorOut = {})
+  $collectors.add($collectorOut)
+  #set ($col = $xwiki.getDocument($collectorName))
+  #set ($cobj = $doc.getObject($collectorName))
+
+  $collectorOut.put("name", $col.getName())
+
+  #set($schedule = $schedulesMap.get("DataCollectors.$col.getName()"))
+  #if ("$!schedule" == "")
+    #set($schedule = $schedulesList.get(0))
+  #else
+    $collectorOut.put('enabled', 'true')
+  #end
+  $collectorOut.put("periodicity_edit", "$!schedule.display('periodicity', 'edit')")
+  $collectorOut.put("periodicity_view", "$!schedule.getProperty('periodicity').getValue()")
+
+  #set($props = [])
+  $collectorOut.put("properties", $props)
+
+  #set($collectorProps = $col.getxWikiClass().getEnabledProperties())
+  #foreach($cp in $collectorProps)
+    #set($prop = {})
+    $props.add($prop)
+    $prop.put("name", "$cp.getName()")
+    $prop.put("prettyName", $cp.getPrettyName())
+    $prop.put("type", $cp.getType())
+    #if ("$!cobj" != "")
+      $prop.put("value", $cobj.getProperty($cp.getName()).getValue())
+    #end
+  #end
+#end
+{{/velocity}}
+{{velocity}}## Data Collector Output, this is picked up by the jsx javascript.
+{{html clean="false"}}
+<div class="data-collectors" style="display:none;">$escapetool.url($jsontool.serialize($outConf))</div>
+{{/html}}{{/velocity}}

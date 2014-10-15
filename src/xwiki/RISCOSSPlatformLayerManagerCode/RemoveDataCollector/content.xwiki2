@@ -1,0 +1,27 @@
+{{velocity}}
+## -*- Mode:Velocity
+#if("$!request.getParameter('deleteCollector')" != "")
+  #set($dc = $!request.getParameter('deleteCollector'))
+  #set($dn = $!request.getParameter('docName'))
+  #set($d = $xwiki.getDocument($dn))
+  #set($rmobj = '')
+  #foreach($obj in $d.getObjects('RISCOSSPlatformLayerManagerCode.DataCollectorScheduler'))
+    #set($rmobj = $obj)
+  #end
+  #set ($ret = "OK")
+  #if("$!rmobj" != "")
+    #set($obj2 = $doc.getObject($rmobj.getProperty("collectorName").getValue()))
+    #if ("$!obj2" != "")
+      $doc.removeObject($obj2)##
+    #else
+      #set ($ret = "ENOCOLLECTOR")
+    #end
+    $doc.removeObject($rmobj)##
+  #else
+    #set ($ret = "ENOSCHEDULE")
+  #end
+  $ret
+#else
+{{info}}This document contains code to remove data collectors from documents.{{/info}}
+#end
+{{/velocity}}

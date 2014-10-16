@@ -119,30 +119,11 @@ private CmdReturn runCmd(Ctx ctx, String cmd, String stdin)
     return out;
 }
 
-private String mkPost(String value, Object collectorObj, String target)
-{
-    String collectorID = collectorObj.getProperty("name").getValue();
-    String collectorDataType = collectorObj.getProperty("dataType").getValue();
-
-    JSONObject post = new JSONObject();
-    post.put("id", collectorID);
-    post.put("type", collectorDataType);
-    post.put("target", target);
-    post.put("value", value);
-
-    JSONArray out = new JSONArray();
-    out.put(post);
-    return out.toString();
-}
-
-private int uploadToRDR(String value,
+private int uploadToRDR(String output,
                         String host,
                         Long port,
-                        String path,
-                        Object collectorObj,
-                        String target) throws Exception
+                        String path) throws Exception
 {
-    String output = mkPost(value, collectorObj, target);
     HttpClient client = HttpClientBuilder.create().build();
     HttpPost request = new HttpPost("http://" + host + ":" + port + "" + path);
     request.setEntity(new StringEntity(output));
@@ -169,6 +150,7 @@ private void runJob(Ctx ctx, Object doc, Object collectorConf, scheduleConf) {
     String command = getValue(collectorObj, "command");
     Map rdrInfo = getRDRInfo(ctx);
     def out = new JSONObject();
+    out.put("riscoss_targetName", entity.getProperty("rdids").getValue());
     for (String propName : collectorConf.getxWikiClass().getEnabledPropertyNames()) {
         out.put(propName, getValue(collectorConf, propName));
     }
@@ -177,12 +159,16 @@ private void runJob(Ctx ctx, Object doc, Object collectorConf, scheduleConf) {
     System.out.println("debug: stderr: " + res.stderr);
     System.out.println("debug: retcode: " + res.retcode);
     if (res.retcode != 0) { return; }
+    String out = res.stdout;
+    if (out.indexOf("-----BEGIN RISK DATA-----") != -1) {
+        out = out.substring(0, out.indexOf("-----BEGIN RISK DATA-----") +
+            "-----BEGIN RISK DATA-----".length());
+        out = out.substring(out.indexOf("-----END RISK DATA-----"));
+    }
     if (uploadToRDR(res.stdout,
                     rdrInfo.get("riscoss_rdrHost"),
                     rdrInfo.get("riscoss_rdrPort"),
-                    rdrInfo.get("riscoss_rdrPath"),
-                    collectorObj,
-                    entity.getProperty("rdids").getValue()) == 0)
+                    rdrInfo.get("riscoss_rdrPath")) == 0)
     {
         rescheduleJob(ctx, doc, scheduleConf);
     }

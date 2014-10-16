@@ -5,7 +5,7 @@
   #set($dn = $!request.getParameter('docName'))
   #set($d = $xwiki.getDocument($dn))
   #set($rmobj = '')
-  #foreach($obj in $d.getObjects('RISCOSSPlatformLayerManagerCode.DataCollectorScheduler'))
+  #foreach($obj in $d.getObjects('RISCOSSPlatformDataCollectorCode.DataCollectorScheduler'))
     #set($rmobj = $obj)
   #end
   #set ($ret = "OK")

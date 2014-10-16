@@ -1,6 +1,6 @@
 Package(function (pack, XWiki) {
-    pack.setName("RISCOSS Domain Manager Wiki");
-    pack.setDescription("RISCOSS Platform - Domain Manager - UI - Wiki");
-    pack.setExtensionId("eu.riscoss:riscoss-platform-dm-ui-wiki");
-    pack.setXarName("riscoss-platform-dm-ui-wiki-0.20-SNAPSHOT.xar")
+    pack.setName("RISCOSS Data Collector Code");
+    pack.setDescription("RISCOSS Platform - Domain Manager - UI - Data Collector Code");
+    pack.setExtensionId("eu.riscoss:riscoss-platform-dm-ui-datacollector");
+    pack.setXarName("riscoss-platform-dm-ui-datacollector-0.24-SNAPSHOT.xar")
 });

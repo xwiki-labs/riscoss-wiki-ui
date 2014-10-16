@@ -4,20 +4,20 @@
 ##
 
 ## Load the jsx which this code will send data to.
-$xwiki.jsx.use('RISCOSSPlatformLayerManagerCode.DataCollectorManager', {"minify":"false"})
+$xwiki.jsx.use('RISCOSSPlatformDataCollectorCode.DataCollectorManager', {"minify":"false"})
 
 ## The final output
 #set ($outConf = {})
 
 ## URL for removing objects, used by the jsx
-#set ($removeDC = 'RISCOSSPlatformLayerManagerCode.RemoveDataCollector')
+#set ($removeDC = 'RISCOSSPlatformDataCollectorCode.RemoveDataCollector')
 $outConf.put("objRemoveURL", $xwiki.getURL($removeDC, 'get', "docName=$doc.getFullName()"))
 
 ## List of data collectors
 #set ($collectors = [])
 $outConf.put("collectors", $collectors)
 
-#set ($schedulesList = $doc.getObjects("RISCOSSPlatformLayerManagerCode.DataCollectorScheduler"))
+#set ($schedulesList = $doc.getObjects("RISCOSSPlatformDataCollectorCode.DataCollectorScheduler"))
 #set ($schedulesMap = {})
 #foreach ($s in $schedulesList)
   #if ("$!s.getProperty('collectorName')" != "")
@@ -26,7 +26,7 @@ $outConf.put("collectors", $collectors)
 #end
 
 #if ("$schedulesList.size()" == "0")
-  $schedulesList.add($doc.newObject("RISCOSSPlatformLayerManagerCode.DataCollectorScheduler"))
+  $schedulesList.add($doc.newObject("RISCOSSPlatformDataCollectorCode.DataCollectorScheduler"))
 #end
 
 #set ($collectorDocNames =

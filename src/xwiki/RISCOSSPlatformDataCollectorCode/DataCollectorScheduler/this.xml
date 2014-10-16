@@ -21,12 +21,12 @@
 -->
 
 <xwikidoc>
-  <web>RISCOSSPlatformLayerManagerCode</web>
+  <web>RISCOSSPlatformDataCollectorCode</web>
   <name>DataCollectorScheduler</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
-  <parent>RISCOSSPlatformLayerManagerCode.WebHome</parent>
+  <parent>RISCOSSPlatformDataCollectorCode.WebHome</parent>
   <creator>xwiki:XWiki.Admin</creator>
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
@@ -43,7 +43,7 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
   <class>
-    <name>RISCOSSPlatformLayerManagerCode.DataCollectorScheduler</name>
+    <name>RISCOSSPlatformDataCollectorCode.DataCollectorScheduler</name>
     <customClass/>
     <customMapping/>
     <defaultViewSheet/>
@@ -194,7 +194,7 @@
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </status>
     </class>
-    <name>RISCOSSPlatformLayerManagerCode.DataCollectorScheduler</name>
+    <name>RISCOSSPlatformDataCollectorCode.DataCollectorScheduler</name>
     <number>0</number>
     <className>XWiki.SchedulerJobClass</className>
     <guid>ee75dc1f-fb07-455d-b8f2-0d29b152ff8e</guid>
@@ -218,7 +218,7 @@
     </property>
     <property>
       <script>try{
-    xwiki.parseGroovyFromPage("RISCOSSPlatformLayerManagerCode.DataCollectorGroovy").main(xcontext, services, xwiki);
+    xwiki.parseGroovyFromPage("RISCOSSPlatformDataCollectorCode.DataCollectorGroovy").main(xcontext, services, xwiki);
 } catch (Exception e) { e.printStackTrace(); }</script>
     </property>
     <property>

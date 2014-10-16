@@ -1,7 +1,7 @@
 require(['jquery'], function ($) {
 
   // VELOCITY
-  var REMOVE_DC_URL = "$xwiki.getURL('RISCOSSPlatformLayerManagerCode.RemoveDataCollector')";
+  var REMOVE_DC_URL = "$xwiki.getURL('RISCOSSPlatformDataCollectorCode.RemoveDataCollector')";
   // END_VELOCITY
 
   var MESSAGES = {

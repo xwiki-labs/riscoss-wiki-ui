@@ -138,7 +138,7 @@ private int uploadToRDR(String output, String rdrPath) throws Exception
 
 private void runJob(Ctx ctx, Object doc, Object collectorConf, scheduleConf) {
     def collectorDoc = ctx.xwiki.getDocument(collectorConf.getxWikiClass().getName());
-    def collectorObj = collectorDoc.getObject("RISCOSSPlatformCode.DataCollector");
+    def collectorObj = collectorDoc.getObject("RISCOSSPlatformDataCollectorCode.DataCollectorClass");
     def entity = doc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass");
     String command = getValue(collectorObj, "command");
     String rdrPath = getRDRInfo(ctx);
@@ -199,7 +199,7 @@ private void runSchedule(Ctx ctx, Object doc, Object scheduleConf) {
 private void runEntity(Ctx ctx, String docName) {
 
     def doc = ctx.xwiki.getDocument(docName);
-    def scheduleConfs = doc.getObjects("RISCOSSPlatformLayerManagerCode.DataCollectorScheduler");
+    def scheduleConfs = doc.getObjects("RISCOSSPlatformDataCollectorCode.DataCollectorScheduler");
     for (int i = 0; i < scheduleConfs.size(); i++) {
         runSchedule(ctx, doc, scheduleConfs.get(i));
     }
@@ -208,7 +208,7 @@ private void runEntity(Ctx ctx, String docName) {
 public void main(Object xcontext, Object services, Object xwiki) {
     Ctx ctx = mkCtx(xwiki, services, xcontext);
     def docNames = ctx.services.query.xwql(
-            "from doc.object('RISCOSSPlatformLayerManagerCode.DataCollectorScheduler') as sched"
+            "from doc.object('RISCOSSPlatformDataCollectorCode.DataCollectorScheduler') as sched"
         ).execute();
     def dox = new ArrayList();
     for (int i = 0; i < docNames.size(); i++) {

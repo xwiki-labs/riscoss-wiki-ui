@@ -21,7 +21,7 @@ public class Ctx {
     final Object xwiki;
     final Object services;
     final Object xcontext;
-    HashMap maybeRDRInfo;
+    String maybeRDRInfo;
     final HashMap<String, Long> millisecondsByPeriod;
 
     Ctx(Object xwiki, Object services, Object xcontext, HashMap millisecondsByPeriod) {
@@ -50,15 +50,11 @@ private Object getValue(Object obj, String name) {
     return prop.getValue();
 }
 
-private HashMap getRDRInfo(Ctx ctx) {
+private String getRDRInfo(Ctx ctx) {
     if (ctx.maybeRDRInfo == null) {
-        def confDoc = ctx.xwiki.getDocument("RISCOSSPlatformCode.RISCOSSConfig");
-        def conf = confDoc.getObject("RISCOSSPlatformCode.RISCOSSConfig");
-        def outMap = new HashMap<String, String>();
-        outMap.put("riscoss_rdrHost", conf.getProperty("rdrHost").getValue());
-        outMap.put("riscoss_rdrPort", conf.getProperty("rdrPort").getValue());
-        outMap.put("riscoss_rdrPath", conf.getProperty("rdrPath").getValue());
-        ctx.maybeRDRInfo = outMap;
+        def confDoc = ctx.xwiki.getDocument("RISCOSSPlatformCode.RISCOSSConfiguration");
+        def conf = confDoc.getObject("RISCOSSPlatformCode.RISCOSSConfigurationClass");
+        ctx.maybeRDRInfo = conf.getProperty("rdr").getValue();
     }
     return ctx.maybeRDRInfo;
 }
@@ -119,13 +115,10 @@ private CmdReturn runCmd(Ctx ctx, String cmd, String stdin)
     return out;
 }
 
-private int uploadToRDR(String output,
-                        String host,
-                        Long port,
-                        String path) throws Exception
+private int uploadToRDR(String output, String rdrPath) throws Exception
 {
     HttpClient client = HttpClientBuilder.create().build();
-    HttpPost request = new HttpPost("http://" + host + ":" + port + "" + path);
+    HttpPost request = new HttpPost(rdrPath);
     request.setEntity(new StringEntity(output));
     HttpResponse response = client.execute(request);
     int responseCode = response.getStatusLine().getStatusCode();
@@ -148,7 +141,7 @@ private void runJob(Ctx ctx, Object doc, Object collectorConf, scheduleConf) {
     def collectorObj = collectorDoc.getObject("RISCOSSPlatformCode.DataCollector");
     def entity = doc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass");
     String command = getValue(collectorObj, "command");
-    Map rdrInfo = getRDRInfo(ctx);
+    String rdrPath = getRDRInfo(ctx);
     def out = new JSONObject();
     out.put("riscoss_targetName", entity.getProperty("rdids").getValue());
     for (String propName : collectorConf.getxWikiClass().getEnabledPropertyNames()) {
@@ -165,11 +158,7 @@ private void runJob(Ctx ctx, Object doc, Object collectorConf, scheduleConf) {
             "-----BEGIN RISK DATA-----".length());
         out = out.substring(out.indexOf("-----END RISK DATA-----"));
     }
-    if (uploadToRDR(res.stdout,
-                    rdrInfo.get("riscoss_rdrHost"),
-                    rdrInfo.get("riscoss_rdrPort"),
-                    rdrInfo.get("riscoss_rdrPath")) == 0)
-    {
+    if (uploadToRDR(res.stdout, rdrPath) == 0) {
         rescheduleJob(ctx, doc, scheduleConf);
     }
 }

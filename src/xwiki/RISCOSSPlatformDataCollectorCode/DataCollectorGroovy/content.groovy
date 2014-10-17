@@ -16,7 +16,7 @@ import org.apache.http.entity.StringEntity;
 
 public class Ctx {
 
-    static final int COLLECTOR_TIMEOUT_MILLISECONDS = 20000;
+    static final int COLLECTOR_TIMEOUT_MILLISECONDS = 600000;
 
     final Object xwiki;
     final Object services;
@@ -136,30 +136,32 @@ private int uploadToRDR(String output, String rdrPath) throws Exception
     return 0;
 }
 
-private void runJob(Ctx ctx, Object doc, Object collectorConf, scheduleConf) {
-    def collectorDoc = ctx.xwiki.getDocument(collectorConf.getxWikiClass().getName());
+private void runJob(Ctx ctx, Object entityDoc, Object collectorConf, Object scheduleConf) {
+    def collectorDoc = ctx.xwiki.getDocument(getValue(scheduleConf, "collectorName"));
     def collectorObj = collectorDoc.getObject("RISCOSSPlatformDataCollectorCode.DataCollectorClass");
-    def entity = doc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass");
+    def entity = entityDoc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass");
     String command = getValue(collectorObj, "command");
     String rdrPath = getRDRInfo(ctx);
     def out = new JSONObject();
-    out.put("riscoss_targetName", entity.getProperty("rdids").getValue());
-    for (String propName : collectorConf.getxWikiClass().getEnabledPropertyNames()) {
-        out.put(propName, getValue(collectorConf, propName));
+    out.put("riscoss_targetName", getValue(entity, "rdids"));
+    if (collectorConf != null) {
+        for (String propName : collectorConf.getxWikiClass().getEnabledPropertyNames()) {
+            out.put(propName, getValue(collectorConf, propName));
+        }
     }
     CmdReturn res = runCmd(ctx, command, out.toString());
     System.out.println("debug: stdout: " + res.stdout);
     System.out.println("debug: stderr: " + res.stderr);
     System.out.println("debug: retcode: " + res.retcode);
     if (res.retcode != 0) { return; }
-    String out = res.stdout;
-    if (out.indexOf("-----BEGIN RISK DATA-----") != -1) {
-        out = out.substring(0, out.indexOf("-----BEGIN RISK DATA-----") +
+    String stdout = res.stdout;
+    if (stdout.indexOf("-----BEGIN RISK DATA-----") != -1) {
+        stdout = stdout.substring(stdout.indexOf("-----BEGIN RISK DATA-----") +
             "-----BEGIN RISK DATA-----".length());
-        out = out.substring(out.indexOf("-----END RISK DATA-----"));
+        stdout = stdout.substring(0, stdout.indexOf("-----END RISK DATA-----"));
     }
-    if (uploadToRDR(res.stdout, rdrPath) == 0) {
-        rescheduleJob(ctx, doc, scheduleConf);
+    if (uploadToRDR(stdout, rdrPath) == 0) {
+        rescheduleJob(ctx, entityDoc, scheduleConf);
     }
 }
 

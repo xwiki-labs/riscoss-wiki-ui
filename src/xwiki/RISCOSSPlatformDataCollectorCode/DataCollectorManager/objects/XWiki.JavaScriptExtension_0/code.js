@@ -67,7 +67,7 @@ require(['jquery'], function ($) {
         case 'NumberClass': $input.attr('type', 'text'); break;
       }
       $input.attr('class', 'post-input');
-      $input.attr('name', 'DataCollectors.' + col.name + '_0_' + prop.name);
+      $input.attr('name', 'RISCOSSPlatformDataCollectors.' + col.name + '_0_' + prop.name);
       $input.attr('value', prop.value || '');
     }
 
@@ -78,7 +78,7 @@ require(['jquery'], function ($) {
     $input.remove();
     $freqDD.append(freqEdit);
     var name = $freqDD.find('select').attr('name').replace(/_periodicity$/, '_collectorName');
-    $freqDD.append('<input type="hidden" name="' + name + '" value="DataCollectors.' + col.name + '">');
+    $freqDD.append('<input type="hidden" name="' + name + '" value="RISCOSSPlatformDataCollectors.' + col.name + '">');
     $freqDD.find('select').attr('id', inputId).attr('class', 'post-input');
     $freqDD.find('input').attr('class', 'post-input');
 
@@ -92,7 +92,7 @@ require(['jquery'], function ($) {
       if (col.enabled) {
         var inProgress = new XWiki.widgets.Notification(MESSAGES.deletingObject, "inprogress");
         $.ajax({
-          url: getObjRemoveURL(objRemoveURL, 'DataCollectors.' + col.name),
+          url: getObjRemoveURL(objRemoveURL, 'RISCOSSPlatformDataCollectors.' + col.name),
           method: 'POST',
           success: function () {
             inProgress.hide();
@@ -124,6 +124,7 @@ require(['jquery'], function ($) {
   };
 
   var viewCollector = function (col, $ul) {
+    if (col.periodicity_view === "") { return; }
     var $li = appendElem($ul, 'li');
     $li.text(col.name + ' - Running ' + col.periodicity_view);
   };

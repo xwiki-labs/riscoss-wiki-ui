@@ -30,7 +30,8 @@ $outConf.put("collectors", $collectors)
 #end
 
 #set ($collectorDocNames =
-  $services.query.xwql('from doc.object(RISCOSSPlatformCode.DataCollector) as x').execute())
+  $services.query.xwql(
+    'from doc.object(RISCOSSPlatformDataCollectorCode.DataCollectorClass) as x').execute())
 #foreach($collectorName in $collectorDocNames)
   #set ($collectorOut = {})
   $collectors.add($collectorOut)
@@ -39,7 +40,7 @@ $outConf.put("collectors", $collectors)
 
   $collectorOut.put("name", $col.getName())
 
-  #set($schedule = $schedulesMap.get("DataCollectors.$col.getName()"))
+  #set($schedule = $schedulesMap.get("RISCOSSPlatformDataCollectors.$col.getName()"))
   #if ("$!schedule" == "")
     #set($schedule = $schedulesList.get(0))
   #else

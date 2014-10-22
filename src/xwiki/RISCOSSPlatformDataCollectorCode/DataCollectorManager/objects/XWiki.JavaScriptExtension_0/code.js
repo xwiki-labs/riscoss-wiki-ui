@@ -1,9 +1,5 @@
 require(['jquery'], function ($) {
 
-  // VELOCITY
-  var REMOVE_DC_URL = "$xwiki.getURL('RISCOSSPlatformDataCollectorCode.RemoveDataCollector')";
-  // END_VELOCITY
-
   var MESSAGES = {
     dataCollectors: 'Data Collectors',
     deletingObject: 'Deleting Object',
@@ -53,7 +49,7 @@ require(['jquery'], function ($) {
 
   var editCollector = function (col, $elem, objRemoveURL) {
 
-    var $checkbox = makeLabeledElement($elem, col.name, 'input');
+    var $checkbox = makeLabeledElement($elem, col.title, 'input');
     $checkbox.attr('type', 'checkbox');
     var $subsection = appendElem($checkbox.parent(), 'div');
 
@@ -67,7 +63,7 @@ require(['jquery'], function ($) {
         case 'NumberClass': $input.attr('type', 'text'); break;
       }
       $input.attr('class', 'post-input');
-      $input.attr('name', 'RISCOSSPlatformDataCollectors.' + col.name + '_0_' + prop.name);
+      $input.attr('name', col.fullName + '_0_' + prop.name);
       $input.attr('value', prop.value || '');
     }
 
@@ -78,7 +74,7 @@ require(['jquery'], function ($) {
     $input.remove();
     $freqDD.append(freqEdit);
     var name = $freqDD.find('select').attr('name').replace(/_periodicity$/, '_collectorName');
-    $freqDD.append('<input type="hidden" name="' + name + '" value="RISCOSSPlatformDataCollectors.' + col.name + '">');
+    $freqDD.append('<input type="hidden" name="' + name + '" value="' + col.fullName + '">');
     $freqDD.find('select').attr('id', inputId).attr('class', 'post-input');
     $freqDD.find('input').attr('class', 'post-input');
 
@@ -92,7 +88,7 @@ require(['jquery'], function ($) {
       if (col.enabled) {
         var inProgress = new XWiki.widgets.Notification(MESSAGES.deletingObject, "inprogress");
         $.ajax({
-          url: getObjRemoveURL(objRemoveURL, 'RISCOSSPlatformDataCollectors.' + col.name),
+          url: getObjRemoveURL(objRemoveURL, col.fullName),
           method: 'POST',
           success: function () {
             inProgress.hide();
@@ -124,9 +120,9 @@ require(['jquery'], function ($) {
   };
 
   var viewCollector = function (col, $ul) {
-    if (col.periodicity_view === "") { return; }
+    if (!col.enabled) { return; }
     var $li = appendElem($ul, 'li');
-    $li.text(col.name + ' - Running ' + col.periodicity_view);
+    $li.text(col.title + ' - Running ' + col.periodicity_view);
   };
 
   var view = function (config, $elem) {

@@ -25,10 +25,6 @@ $outConf.put("collectors", $collectors)
   #end
 #end
 
-#if ("$schedulesList.size()" == "0")
-  $schedulesList.add($doc.newObject("RISCOSSPlatformDataCollectorCode.DataCollectorScheduler"))
-#end
-
 #set ($collectorDocNames =
   $services.query.xwql(
     'from doc.object(RISCOSSPlatformDataCollectorCode.DataCollectorClass) as x').execute())
@@ -38,11 +34,13 @@ $outConf.put("collectors", $collectors)
   #set ($col = $xwiki.getDocument($collectorName))
   #set ($cobj = $doc.getObject($collectorName))
 
-  $collectorOut.put("name", $col.getName())
+  $collectorOut.put("title", $col.getTitle())
+  $collectorOut.put("fullName", $col.getFullName())
 
-  #set($schedule = $schedulesMap.get("RISCOSSPlatformDataCollectors.$col.getName()"))
+  #set($schedule = $schedulesMap.get($col.getFullName()))
   #if ("$!schedule" == "")
-    #set($schedule = $schedulesList.get(0))
+    ## We're not going to save this object at the moment, just make it ready to save later...
+    #set($schedule = $doc.newObject("RISCOSSPlatformDataCollectorCode.DataCollectorScheduler"))
   #else
     $collectorOut.put('enabled', 'true')
   #end

@@ -1,0 +1,5 @@
+#!/bin/bash
+### This script is really only intended to help me (cjd)
+./do --mvn ../riscoss-platform-build/riscoss-platform/riscoss-platform-dm/riscoss-platform-dm-ui/riscoss-platform-dm-ui-wiki
+cd ../riscoss-platform-build/riscoss-platform/riscoss-platform-dm/riscoss-platform-dm-ui/
+./xarformat.sh

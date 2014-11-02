@@ -51,6 +51,7 @@ require(['jquery'], function ($) {
 
     var $checkbox = makeLabeledElement($elem, col.title, 'input');
     $checkbox.attr('type', 'checkbox');
+    $checkbox.parent().css({"background-color": "#F0F0F0", "padding": "5px", "border-bottom" : "1px solid #A0A0A0"});
     var $subsection = appendElem($checkbox.parent(), 'div');
 
     var $list = appendElem($subsection, 'dl');
@@ -127,7 +128,7 @@ require(['jquery'], function ($) {
 
   var view = function (config, $elem) {
     var $dl = appendElem($elem, 'dl');
-    $dl.append('<dt>'+MESSAGES.dataCollectors+'</dt>');
+    $dl.append('<dt><h1>'+MESSAGES.dataCollectors+'</h1></dt>');
     var $dd = appendElem($dl, 'dd');
     var $ul = appendElem($dd, 'ul');
     for (var i = 0; i < config.collectors.length; i++) {

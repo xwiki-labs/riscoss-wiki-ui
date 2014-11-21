@@ -1,0 +1,6 @@
+{{velocity}}
+## -*- Mode:Velocity
+
+  ; $prop.prettyName
+  : $doc.display($prop.getName())
+{{/velocity}}

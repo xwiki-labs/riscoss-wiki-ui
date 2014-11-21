@@ -1,0 +1,39 @@
+{{velocity}}
+## -*- Mode:Velocity
+#if($request.create)
+  $request.parent
+  $request.space
+  $request.template
+  $request.name
+
+  #set($documentReference = $services.model.createDocumentReference(null, $request.space, $request.name))
+
+  #set($cancelRedirect = $xwiki.getURL("${request.space}.WebHome"))
+  #set($redirect = $xwiki.getURL($documentReference, "edit", "template=${request.template}&parent=${request.space}.WebHome&title=${request.name}&cancelredirect=${cancelRedirect}"))
+  
+  $response.sendRedirect($redirect)
+#elseif(!($request.space && $request.template && $request.fieldLabel))
+  {{error}}Missing parameter{{/error}}
+#else
+{{html}}
+<form action="$doc.getURL()" method="POST" class="xform third createForm">
+  <input type="hidden" name="create" value="true"/>
+  <input type="hidden" name="parent" value="${request.space}.WebHome"/>
+  <input type="hidden" name="space" class="targetSpace" value="${request.space}"/>
+  <input type="hidden" name="template" value="${request.template}"/>
+  <dl>
+    <dt><label for="page">$request.fieldLabel</label><dt>
+    <dd><input type="text" name="name" class="targetName"/></dd>
+  </dl>
+  <div class="buttons">
+    <span class="buttonwrapper">
+      <input type="submit" value="$services.localization.render("create")" class="button"/>
+    </span>
+    <span class="buttonwrapper">
+      <a class="secondary button" href="#">$services.localization.render("cancel")</a>
+    </span>
+  </div>
+</form>
+{{/html}}
+#end
+{{/velocity}}

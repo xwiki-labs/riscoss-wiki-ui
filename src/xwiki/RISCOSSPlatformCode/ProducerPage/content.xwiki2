@@ -1,0 +1,14 @@
+{{velocity}}
+## -*- Mode:Velocity
+#set($columns = ['entity'])
+#set($columnsProperties = {
+    'entity' : { 'type' : 'text', 'link' : 'field', 'sortable' : 'true', 'filterable' : 'true'}
+})
+#set($options = {
+   'resultPage' : 'RISCOSSPlatformLayerManagerCode.EntitiesLiveTableResults',
+   'rowCount' : 10,
+   'translationPrefix' : 'riscossPlatform.layerManager.entitiesTable.',
+   'creator': $xcontext.getUser()
+})
+#livetable('entities', $columns, $columnsProperties, $options)
+{{/velocity}}

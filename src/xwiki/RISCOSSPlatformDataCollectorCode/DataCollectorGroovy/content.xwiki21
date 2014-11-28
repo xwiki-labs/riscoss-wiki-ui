@@ -143,10 +143,14 @@ private void runJob(Ctx ctx, Object entityDoc, Object collectorConf, Object sche
     String command = getValue(collectorObj, "command");
     String rdrPath = getRDRInfo(ctx);
     def out = new JSONObject();
-    out.put("riscoss_targetName", getValue(entity, "rdids"));
+    out.put("targetEntity", entityDoc.getName());
+    out.put("timeLastRun", getValue(scheduleConf, "timeLastRun"));
     if (collectorConf != null) {
         for (String propName : collectorConf.getxWikiClass().getEnabledPropertyNames()) {
-            out.put(propName, getValue(collectorConf, propName));
+            String val = getValue(collectorConf, propName);
+            if (val != null && !"".equals(val)) {
+                out.put(propName, val);
+            }
         }
     }
     CmdReturn res = runCmd(ctx, command, out.toString());

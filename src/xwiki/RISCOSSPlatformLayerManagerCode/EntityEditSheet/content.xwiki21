@@ -1,0 +1,21 @@
+{{velocity}}
+## -*- Mode:Velocity
+$xwiki.jsx.use("RISCOSSPlatformLayerManagerCode.EntityEditSheet")
+#set($layer = $doc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass").getProperty("layer").value)
+#set($layerDocument = $xwiki.getDocument($layer))
+
+##; $services.localization.render("riscossPlatform.layerManager.layer")
+##: $layerDocument.title
+
+#set($class = $doc.getObject($layer).xWikiClass)
+#foreach($prop in $class.properties)
+  ; $prop.prettyName
+  : $doc.display($prop.getName())
+#end
+
+##----
+##
+##; $services.localization.render("riscossPlatform.layerManager.rdids")
+##: $doc.display("rdids")
+{{/velocity}}
+{{include document="RISCOSSPlatformDataCollectorCode.DataCollectorManager"}}

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="ISO-8859-1"?><riscoss>
+    <model>
+        <relationships>
+            <expose source="problematic-copyleft-adoption" target="license-violation"/>
+            <expose weight="1.0" source="final-component-is-gpl,final-component-is-lgpl,oss-has-permissive-license" target="patch-rejection"/>
+            <expose source="oss-has-copyleft-with-linking" target="problematic-LGPL-like-linking-adoption"/>
+            <expose source="problematic-LGPL-like-linking-adoption" target="license-violation"/>
+            <expose source="files-without-license" target="ip-infringement"/>
+            <expose source="presence-of-ads-restrictions" target="ads-restrictions"/>
+			<expose weight="0.5" source="ads-restrictions" target="license-violation"/>
+            <expose source="oss-has-copyleft-license" target="problematic-copyleft-adoption"/>
+            <expose source="proprietary-code" target="license-violation"/>
+            <expose source="oss-has-unclear-license" target="license-uncertainty"/>
+            <protect weight="1.0" source="oss-has-copyleft-with-linking" target="license-violation"/>
+            <expose weight="0.5" source="license-uncertainty" target="license-violation"/>
+            <protect weight="1.0" source="oss-has-permissive-license" target="license-violation"/>
+            <expose source="license-violation" target="ip-infringement"/>
+            <expose source="final-component-is-gpl,oss-has-copyleft-with-linking" target="patch-rejection"/>
+            <indicate source="percentage-of-files-with-permissive-license" target="oss-has-permissive-license"/>
+            <indicate source="files-with-unknown-license" target="oss-has-unclear-license"/>
+            <indicate source="files-with-ads-required-liceses" target="presence-of-ads-restrictions"/>
+            <indicate weight="0.3" function="fx.evidence.swap(fx.join.avg(sources))" source="files-with-commercial-license" target="oss-has-copyleft-with-linking"/>
+            <indicate source="number-of-different-licenses" target="oss-has-unclear-license" function="fx.join.avg(fx.transform.tanh(sources,5))"/>
+            <indicate source="i:final-component-permissive" target="final-component-is-permissive"/>
+            <indicate source="files-with-commercial-license" target="proprietary-code"/>
+            <indicate source="copyleft-licenses-with-linking" target="oss-has-copyleft-with-linking"/>
+            <indicate source="i:final-component-gpl-license" target="final-component-is-gpl"/>
+            <indicate source="percentage-of-files-with-public-domain-license" target="oss-has-permissive-license"/>
+            <indicate source="percentage-of-files-with-public-domain-license" target="oss-has-unclear-license"/>
+            <indicate weight="0.3" function="fx.evidence.swap(fx.join.avg(sources))" source="files-with-commercial-license" target="oss-has-copyleft-license"/>
+            <indicate weight="0.3" function="fx.evidence.swap(fx.join.avg(sources))" source="files-with-commercial-license" target="oss-has-permissive-license"/>
+            <indicate source="percentage-of-files-without-license" target="files-without-license"/>
+            <indicate source="i:final-component-closed-source" target="final-component-is-closed-source"/>
+            <indicate source="percentage-of-files-without-license" target="oss-has-unclear-license"/>
+            <indicate source="copyleft-licenses" target="oss-has-copyleft-license"/>
+            <indicate source="i:final-component-lgpl" target="final-component-is-lgpl"/>
+            <increase source="final-component-is-lgpl" target="problematic-copyleft-adoption"/>
+            <increase source="final-component-is-permissive" target="problematic-LGPL-like-linking-adoption"/>
+            <increase source="final-component-is-closed-source" target="problematic-copyleft-adoption"/>
+            <increase source="final-component-is-permissive" target="problematic-copyleft-adoption"/>
+        </relationships>
+        <entities>
+            <indicator id="percentage-of-files-without-license">
+                <property name="input" value="true"/>
+                <property name="label" value="Percentage of files without license"/>
+                <property name="question" value="What&amp;#39;s the percentage of files not covered by any license?"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="percentage-of-files-with-public-domain-license">
+                <property name="input" value="true"/>
+                <property name="label" value="Percentage of files with public domain license"/>
+                <property name="question" value="Percentage of files with public domain license?"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="percentage-of-files-with-permissive-license">
+                <property name="input" value="true"/>
+                <property name="label" value="Percentage of files with permissive license"/>
+                <property name="question" value="Percentage of files with permissive license?"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="copyleft-licenses-with-linking">
+                <property name="input" value="true"/>
+                <property name="label" value="Percentage of files with Copyleft license, linking permitted"/>
+                <property name="question" value="Percentage of files with a copyleft license that permits linking?"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="copyleft-licenses">
+                <property name="input" value="true"/>
+                <property name="label" value="Percentage of files with Copyleft license (release must have the same license)"/>
+                <property name="question" value="Percentage of files with a copyleft license?"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="number-of-different-licenses">
+                <property name="input" value="true"/>
+                <property name="label" value="Number of different licenses"/>
+                <property name="question" value="How many different licenses there are?"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="files-with-unknown-license">
+                <property name="input" value="true"/>
+                <property name="label" value="Percentage of files with unknown license"/>
+                <property name="question" value="Percentage of files with unknown license?"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="files-with-commercial-license">
+                <property name="input" value="true"/>
+                <property name="label" value="Percentage of files with commercial or closed source licenses"/>
+                <property name="question" value="Percentage of files with commercial license?"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="files-with-ads-required-liceses">
+                <property name="input" value="true"/>
+                <property name="label" value="Percentage of files with licenses with advertisement requirements"/>
+                <property name="question" value="Percentage of files with a license that contains advertisement clauses?"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="i:final-component-gpl-license">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+                <property name="question" value="Is the final product covered by a GPL license?"/>
+            </indicator>
+            <indicator id="i:final-component-permissive">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="question" value="Is the final product covered by a permissive license?"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="i:final-component-lgpl">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+                <property name="question" value="Is the final product covered by an LGPL-like license?"/>
+            </indicator>
+            <indicator id="i:final-component-closed-source">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+                <property name="question" value="Is the final component covered by a closed source / commercial license?"/>
+            </indicator>
+            <event id="license-violation">
+                <property name="label" value="License violation"/>
+                <property name="output" value="true"/>
+            </event>
+            <event id="ip-infringement">
+                <property name="label" value="Intellectual property infringement"/>
+                <property name="output" value="true"/>
+            </event>
+            <event id="license-uncertainty">
+                <property name="label" value="License uncertainty"/>
+                <property name="output" value="true"/>
+            </event>
+            <event id="ads-restrictions">
+                <property name="label" value="Advertisement restrictions"/>
+                <property name="output" value="true"/>
+            </event>
+            <event id="patch-rejection">
+                <property name="label" value="Patch rejection due to incompatible license"/>
+                <property name="output" value="true"/>
+            </event>
+            <event id="problematic-copyleft-adoption">
+                <property name="label" value="Adoption of copyleft is problematic"/>
+                <property name="output" value="true"/>
+            </event>
+            <event id="problematic-LGPL-like-linking-adoption">
+                <property name="label" value="Adoption of LGPL-like OSS is problematic"/>
+                <property name="output" value="true"/>
+            </event>
+            <situation id="files-without-license">
+                <property name="label" value="There are files without any license"/>
+            </situation>
+            <situation id="oss-has-unclear-license">
+                <property name="label" value="Adopted OSS component has unclear license"/>
+            </situation>
+            <situation id="oss-has-permissive-license">
+                <property name="label" value="Adopted OSS has a permissive license"/>
+            </situation>
+            <situation id="oss-has-copyleft-with-linking">
+                <property name="label" value="Adopted OSS component has a copyleft, which permits linking"/>
+            </situation>
+            <situation id="proprietary-code">
+                <property name="label" value="Adopted OSS component includes proprietary code"/>
+            </situation>
+            <situation id="modification-or-redistribution">
+                <property name="label" value="Any modification od redistribution"/>
+            </situation>
+            <situation id="final-component-is-gpl">
+                <property name="label" value="Final component is GPL"/>
+            </situation>
+            <situation id="final-component-is-permissive">
+                <property name="label" value="Final component is Permissive"/>
+            </situation>
+            <situation id="final-component-is-closed-source">
+                <property name="label" value="Final component is closed source"/>
+            </situation>
+            <situation id="final-component-is-lgpl">
+                <property name="label" value="Final component is LGPL"/>
+            </situation>
+            <situation id="presence-of-ads-restrictions">
+                <property name="label" value="There are ads restrictions"/>
+            </situation>
+            <situation id="oss-has-copyleft-license">
+                <property name="label" value="Adopted OSS component has a copyleft license"/>
+            </situation>
+        </entities>
+    </model>
+</riscoss>

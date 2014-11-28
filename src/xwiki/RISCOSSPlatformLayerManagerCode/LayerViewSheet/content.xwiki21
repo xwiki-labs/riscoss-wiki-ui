@@ -1,0 +1,19 @@
+{{velocity}}
+|= $services.localization.render("riscossPlatform.layerManager.child") | $doc.display("child")
+#set($class = $doc.getObject($doc.fullName, true).xWikiClass)
+|= $services.localization.render("riscossPlatform.layerManager.properties") | (((
+#foreach($prop in $class.properties)
+* $prop.prettyName
+#end
+)))
+
+----
+
+{{html wiki="true"}}
+#set($xredirect = $xwiki.getDocument("RISCOSSPlatformLayers.WebHome").getURL())
+<span class="buttonwrapper">
+[[$services.localization.render("edit")>>$doc.getExternalURL("edit")]] | [[$services.localization.render("delete")>>$doc.getExternalURL("delete", "xredirect=${xredirect}")]]
+</span>
+{{/html}}
+
+{{/velocity}}

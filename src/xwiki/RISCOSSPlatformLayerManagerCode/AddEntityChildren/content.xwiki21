@@ -1,0 +1,51 @@
+{{velocity}}
+
+#if($request.method == "POST")
+  #if(!$request.target)
+    {{error}}No target in request{{/error}}
+  #else
+    #if($xwiki.exists($request.target))
+      #set($entity = $xwiki.getDocument($request.target))
+      #foreach($child in $request.getParameterValues("children"))
+        #if(!$entity.getObject("RISCOSSPlatformLayerManagerCode.EntityChildClass", "child", $child, false))
+          #set($nb = $entity.createNewObject("RISCOSSPlatformLayerManagerCode.EntityChildClass"))
+          #set($entityChild = $entity.getObject("RISCOSSPlatformLayerManagerCode.EntityChildClass", $nb))
+          $entityChild.set("child", $child)
+          Adding $child $entityChild.getProperty("child").value        
+        #end
+      #end
+      $entity.save()
+      $response.sendRedirect($entity.getURL())
+    #else
+      {{error}}$request.target doesnt' exist{{/error}}
+    #end
+  #end
+#else
+  #if(!$request.entity)
+    {{error}}Missing parameters{{/error}}
+  #else
+    #set($entityDoc = $xwiki.getDocument($request.entity))  
+    #set($entityLayer = $entityDoc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass").getProperty("layer").value)
+    #set($layerDoc = $xwiki.getDocument($entityLayer))
+    #set($layerChild = $layerDoc.getObject("RISCOSSPlatformLayerManagerCode.LayerClass").getProperty("child").value)   
+    #set($children = $services.query.xwql("FROM doc.object(RISCOSSPlatformLayerManagerCode.EntityClass) AS entity WHERE doc.space='RISCOSSPlatformEntities' AND entity.layer='$layerChild'").execute())
+
+    {{html wiki="true"}}
+<form method="POST">
+  <input type="hidden" name="target" value="$request.entity"/>
+  <select name="children" multiple size="15">
+    #foreach($child in $children)
+      #if(!$entityDoc.getObject("RISCOSSPlatformLayerManagerCode.EntityChildClass", "child", $child, false))
+        <option name="$child">$child</option>
+      #end
+    #end
+  </select>
+  <br/><br/>
+  <input type="submit" class="button" value="Add children"/>
+</form>
+    {{/html}}
+
+  #end
+#end
+
+{{/velocity}}

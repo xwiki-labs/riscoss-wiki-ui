@@ -1,0 +1,24 @@
+{{velocity}}
+
+#if($request.method == "POST")
+  #if($request.entity && $request.child)
+    #if($xwiki.exists($request.entity))
+      #set($entity = $xwiki.getDocument($request.entity))
+      #set($childObject = $entity.getObject("RISCOSSPlatformLayerManagerCode.EntityChildClass", "child", $request.child, false))
+      #if($childObject)
+        $entity.removeObject($childObject)
+        $entity.save()
+      #end
+      $response.sendRedirect($entity.getURL())
+    #else
+      {{error}}Entity $request.entity doesn't exist{{/error}}
+    #end
+  #else
+    {{error}}Missing arguments{{/error}}
+  #end
+#else 
+  {{error}}Use POST{{/error}}
+#end
+
+
+{{/velocity}}

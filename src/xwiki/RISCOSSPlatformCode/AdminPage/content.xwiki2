@@ -1,3 +1,5 @@
+= Admin Page =
+
 {{velocity}}
 ## -*- Mode:Velocity
 #set($columns = ['entity'])

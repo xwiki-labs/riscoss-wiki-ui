@@ -1,0 +1,12 @@
+{{velocity}}
+$xwiki.jsx.use("RISCOSSPlatformLayerManagerCode.LayerEditSheet")
+#set($class = $doc.getObject('RISCOSSPlatformLayerManagerCode.LayerClass').xWikiClass)
+#foreach($prop in $class.properties)
+  ; $prop.prettyName
+  : $doc.display($prop.getName())
+#end
+
+== $services.localization.render("riscossPlatform.layerManager.createLayer.layerPropertyDefinition", $doc.name)
+{{/velocity}}
+
+{{include document="RISCOSSPlatformLayerManagerCode.EntityPropertiesEditSheet"}}

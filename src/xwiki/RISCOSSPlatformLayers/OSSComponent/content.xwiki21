@@ -1,0 +1,3 @@
+This is the template used for newly created scopes.
+
+It basically contains a [[RISCOSSPlatformLayerManagerCode.LayerClass]] with a parent set to none.

@@ -1,0 +1,13 @@
+{{html wiki="true"}}
+<p style="text-align: center">[[image:riscoss-logo.png]]</p>
+{{/html}}
+
+{{velocity}}
+#if ($xwiki.getUser().isUserInGroup("XWiki.XWikiAdminGroup"))
+{{include reference="RISCOSSPlatformCode.AdminPage" /}}
+#elseif ($xwiki.getUser().isUserInGroup("RISCOSSPlatformGroups.Producers"))
+{{include reference="RISCOSSPlatformCode.ProducerPage" /}}
+#else
+{{include reference="RISCOSSPlatformCode.ConsumerPage" /}}
+#end
+{{/velocity}}

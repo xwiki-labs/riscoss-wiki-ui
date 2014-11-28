@@ -1,0 +1,78 @@
+{{velocity}}
+## -*- Mode:Velocity
+#set($layer = $doc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass").getProperty("layer").value)
+#set($layerDocument = $xwiki.getDocument($layer))
+
+##; $services.localization.render("riscossPlatform.layerManager.layer")
+##: $layerDocument.title
+
+##----
+
+#set($class = $doc.getObject($layer).xWikiClass)
+#foreach($prop in $class.properties)
+  ; $prop.prettyName
+  : $doc.display($prop.getName())
+#end
+
+{{html wiki="true"}}
+
+----
+
+#if($!layerDocument.getObject("RISCOSSPlatformLayerManagerCode.LayerClass").getProperty("child").value != "")
+
+<form action="$xwiki.getDocument("RISCOSSPlatformLayerManagerCode.AddEntityChildren").getURL()" method="GET">
+    <input type="hidden" name="entity" value="$doc.fullName"/>    
+    <h1>$services.localization.render("riscossPlatform.layerManager.children") <input type="image" src="$xwiki.getSkinFile("icons/silk/add.png")"/></h1>
+</form>
+
+#set($removeChildAction = $xwiki.getDocument("RISCOSSPlatformLayerManagerCode.RemoveEntityChild").getURL())
+
+#foreach($entityChild in $doc.getObjects("RISCOSSPlatformLayerManagerCode.EntityChildClass"))
+  #set($child = $entityChild.getProperty("child").value)
+| [[$child]] | <form action="$removeChildAction" method="POST"><input type="hidden" name="entity" value="$doc.fullName"/><input type="hidden" name="child" value="$child"/><input type="image" src="$xwiki.getSkinFile("icons/silk/delete.png")"/></form>
+#end
+
+----
+#else
+#*
+<form>
+  <h1>$services.localization.render("riscossPlatform.layerManager.children")</h1>
+</form>
+
+  {{info}}This entity cannot have associated children because layer [[$layerDocument]] doesn't have any children{{/info}}
+
+----
+*###
+#end
+
+= Risk analysis
+
+#set($query = "from doc.object(RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass) as ras where ras.entity = '${doc.fullName}'")
+#set($riskAnalysisSessionDocumentNames = $services.query.xwql($query).execute())
+
+|= Risk analysis session |= Analyzed risk configurations
+#foreach($riskAnalysisSessionDocumentName in $riskAnalysisSessionDocumentNames)  
+  #set($riskAnalysisDocument = $xwiki.getDocument($services.model.resolveDocument($riskAnalysisSessionDocumentName)))
+  #set($riskEvaluations = $riskAnalysisDocument.getObjects("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass"))
+| [[$riskAnalysisDocument]] | (((
+#foreach($riskEvaluation in $riskEvaluations)
+* [[$riskEvaluation.getProperty("riskConfiguration").value]]
+#end
+)))
+#end
+
+#if ($hasEdit)
+
+{{include document="RISCOSSPlatformDataCollectorCode.DataCollectorManager"/}}
+
+----
+
+#set($xredirect = $xwiki.getDocument("RISCOSSPlatformEntities.WebHome").getURL())
+<span class="buttonwrapper">
+[[Edit entity>>$doc.getExternalURL("edit")]] | [[Delete entity>>$doc.getExternalURL("delete", "xredirect=${xredirect}")]]
+</span>
+#end
+{{/html}}
+{{/velocity}}
+
+

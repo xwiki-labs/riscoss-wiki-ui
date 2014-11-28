@@ -1,10 +1,14 @@
 {{include document="RISCOSSPlatformCode.Macros"/}}{{velocity}}
+## -*- Mode:Velocity
 $xwiki.jsx.use("RISCOSSPlatformCode.Create", {"minify" : false}) ##
 ## Needed for the XWiki.RISCOSSPlatform.initializeCreateDialog callback
 $xwiki.jsx.use("RISCOSSPlatformCode.ShowInDialog") ##
 #set($mainWikiId = $services.wiki.mainWikiId) ##
 #set($currentWikiId = $services.wiki.currentWikiId) ##
 ##
+#if($isGuest)
+* **[[$services.localization.render("login")>>$doc.getExternalURL("login")]]**
+#else## isGuest
 #if($currentWikiId == 'xwiki' || ($mainWikiId != $currentWikiId))
   #set($wikiName = $services.wiki.getById($services.wiki.getCurrentWikiId()).prettyName)
 * $services.localization.render("riscossPlatform.domain") **$!wikiName**
@@ -18,7 +22,6 @@ $xwiki.jsx.use("RISCOSSPlatformCode.ShowInDialog") ##
 * **$services.localization.render("riscossPlatform.domainManager")**
 #end
 ##
-#if(!$isGuest)
   #if($currentWikiId == 'xwiki' || ($mainWikiId != $currentWikiId))
     #set($layers = $services.query.xwql("SELECT doc.fullName, doc.title FROM Document doc, doc.object(RISCOSSPlatformLayerManagerCode.LayerClass) as layer WHERE doc.space = 'RISCOSSPlatformLayers'").execute())
 * $services.localization.render("riscossPlatform.layerManager")

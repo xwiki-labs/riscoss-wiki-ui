@@ -1,0 +1,28 @@
+{{include document="RISCOSSPlatformCode.Macros"/}}
+{{velocity}}
+## -*- Mode:Velocity
+{{html wiki="true"}}
+<span class="buttonwrapper">
+#generateCreateDialogLink({
+     "space": "RISCOSSPlatformLayers",
+     "template": "RISCOSSPlatformLayerManagerCode.LayerTemplate",
+     "linkLabel": $services.localization.render("riscossPlatform.layerManager.newLayer"),
+     "dialogTitle": $services.localization.render("riscossPlatform.layerManager.newLayer"),
+     "fieldLabel": $services.localization.render("riscossPlatform.layerManager.layerName")
+   })
+</span>
+{{/html}}
+
+#set($columns = ['layer', 'child', 'createEntityLink'])
+#set($columnsProperties = {
+    'layer' : { 'type' : 'text', 'html' : 'true', 'link' : 'field' },
+    'child' : { 'type' : 'text' , 'size' : 50, 'link' : 'field', 'html' : 'true', 'filterable' : 'false', 'sortable' : 'false' },
+    'createEntityLink' : { 'type' : 'text', 'html' : 'true', 'filterable' : 'false', 'sortable' : 'false' }
+})
+#set($options = {
+   'resultPage' : 'RISCOSSPlatformLayerManagerCode.LayersLiveTableResults',
+   'rowCount' : 10,
+   'translationPrefix' : 'riscossPlatform.layerManager.layersTable.'
+})
+#livetable('layers', $columns, $columnsProperties, $options)
+{{/velocity}}

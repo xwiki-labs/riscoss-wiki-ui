@@ -1,0 +1,5 @@
+riscossPlatform.riskAnalysisManager.riskAnalysisSessionsTable.doc.name=Name
+riscossPlatform.riskAnalysisManager.riskAnalysisSessionsTable.entity=Target entity
+riscossPlatform.riskAnalysisManager.entitiesTable.doc.name=Target entity
+riscossPlatform.riskAnalysisManager.entitiesTable.description=Description
+riscossPlatform.riskAnalysisManager.entitiesTable.emptyvalue=None

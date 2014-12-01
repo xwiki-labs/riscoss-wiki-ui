@@ -1,0 +1,33 @@
+{{velocity}}
+#if(!$request.targetName || !$request.targetSpace)
+  {{error}} Missing parameter {{/error}}
+#else
+{{html}}
+<form action="$xwiki.getURL('RISCOSSPlatformRiskAnalysisManagerCode.CreateRiskAnalysisSession')" method="POST" class="xform third">
+  <input type="hidden" name="sessionSpace" value="$request.targetSpace"/>
+  <input type="hidden" name="sessionName" value="$request.targetName"/>
+  <dl>
+    <dt><label for="name">Session name</label><dt>
+    <dd>$request.targetName</dd>
+  </dl>
+  <dl>
+    <dt><label for="name">Target entity</label><dt>
+    <dd><input type="text" id="targetEntity" name="targetEntity"/></dd>
+  </dl>
+  <dl>
+    <dt><label for="name">Risk configurations</label><dt>
+    <dd><input type="text" id="riskConfigurations" name="riskConfigurations"/></dd>
+  </dl>
+  <div class="buttons">
+    <span class="buttonwrapper">
+      <input type="submit" value="$services.localization.render("create")" class="button"/>
+    </span>
+    <span class="buttonwrapper">
+      <a class="secondary button" href="#">$services.localization.render("cancel")</a>
+    </span>
+  </div>
+</form>
+{{/html}}
+#end
+
+{{/velocity}}

@@ -1,0 +1,34 @@
+{{velocity}}
+#if(!($request.sessionName && $request.targetEntity &&$request.riskConfigurations))
+  {{error}} Missing parameters {{/error}}  
+#else
+  #set($ok = true)
+  #set($ok = $ok && $xwiki.exists("RISCOSSPlatformEntities.${request.targetEntity}"))
+  $request.targetEntity $ok
+  #foreach($riskConfiguration in $request.getParameterValues('riskConfigurations'))
+    #set($ok = $ok && $xwiki.exists("RISCOSSPlatformRiskConfigurations.${riskConfiguration}"))
+    $riskConfiguration $ok
+  #end
+  
+  #if($ok)
+    #set($riskAnalysisSession = $xwiki.getDocument("${request.sessionSpace}.${request.sessionName}"))
+    #set($riskAnalysisSessionObject = $riskAnalysisSession.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass", true))
+    $riskAnalysisSessionObject.set("entity", "RISCOSSPlatformEntities.${request.targetEntity}")
+    
+    #foreach($riskConfiguration in $request.getParameterValues('riskConfigurations'))
+      #set($n = $riskAnalysisSession.createNewObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass"))
+      #set($riskEvaluationObject = $riskAnalysisSession.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass", $n))
+      $riskEvaluationObject.set("riskConfiguration", "RISCOSSPlatformRiskConfigurations.${riskConfiguration}")
+      $riskEvaluationObject.set("result", "")
+    #end  
+    
+    $riskAnalysisSession.save()
+    
+    $response.sendRedirect($riskAnalysisSession.getURL())
+  #else
+    {{error}} Something is missing {{/error}}
+  #end
+#end
+
+
+{{/velocity}}

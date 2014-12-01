@@ -53,7 +53,7 @@ private Object getValue(Object obj, String name) {
 private String getRDRInfo(Ctx ctx) {
     if (ctx.maybeRDRInfo == null) {
         def confDoc = ctx.xwiki.getDocument("RISCOSSPlatformCode.RISCOSSConfiguration");
-        def conf = confDoc.getObject("RISCOSSPlatformCode.RISCOSSConfigurationClass");
+        def conf = confDoc.getObject("RISCOSSPlatformCode.RISCOSSConfiguration");
         ctx.maybeRDRInfo = conf.getProperty("rdr").getValue();
     }
     return ctx.maybeRDRInfo;

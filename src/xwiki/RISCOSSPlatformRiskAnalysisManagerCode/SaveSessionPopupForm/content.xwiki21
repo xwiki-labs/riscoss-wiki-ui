@@ -1,0 +1,26 @@
+{{velocity}}
+
+{{html}}
+
+#if($request.xpage == 'plain')
+
+<form class="xform" id="saveSessionPopup:form">
+  <dl>
+    <dt><label>Session name</label><dt>
+    <dd><input type="text" name="sessionName" id="saveSessionPopup:sessionNameInput"/></dd>
+  </dl>
+  <div class="buttons">
+    <span class="buttonwrapper">
+      <input type="submit" value="$services.localization.render("create")" class="button"/>
+    </span>
+    <span class="buttonwrapper">
+      <a class="secondary button" id="saveSessionPopup:cancel" href="#">$services.localization.render("cancel")</a>
+    </span>
+  </div>
+</form>
+
+#end
+
+{{/html}}
+
+{{/velocity}}

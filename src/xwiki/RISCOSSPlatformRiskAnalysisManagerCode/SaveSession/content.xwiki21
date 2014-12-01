@@ -1,0 +1,19 @@
+{{velocity}}
+
+#if($request.entity && $request.riskConfiguration && $request.sessionName && $request.resultData)
+  #set($riskAnalysisSessionDocument = $xwiki.getDocument("RISCOSSPlatformRiskAnalysisSessions.${request.sessionName}"))
+  #set($riskAnalysisSession = $riskAnalysisSessionDocument.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass", true))
+  $riskAnalysisSession.set("entity", $request.entity)
+  #set($riskEvaluation = $riskAnalysisSessionDocument.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass", true))
+  $riskEvaluation.set("riskConfiguration", $request.riskConfiguration)
+  $riskEvaluation.set("inputData", $request.inputData)
+  $riskEvaluation.set("result", $request.resultData)
+  
+  $riskAnalysisSessionDocument.save();
+  
+  $response.sendRedirect($riskAnalysisSessionDocument.getURL())
+#else 
+  {{error}}Missing parameters{{/error}}
+#end
+
+{{/velocity}}

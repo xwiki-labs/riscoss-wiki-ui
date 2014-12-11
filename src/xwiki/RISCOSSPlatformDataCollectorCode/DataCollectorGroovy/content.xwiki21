@@ -4,6 +4,7 @@
 import org.json.JSONObject;
 import org.json.JSONArray;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import org.json.JSONObject;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,6 +14,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.xwiki.environment.Environment;
 
 public class Ctx {
 
@@ -68,7 +70,7 @@ public class CmdReturn {
 }
 
 
-private CmdReturn runCmd(Ctx ctx, String cmd, String stdin)
+private CmdReturn runCmd(Ctx ctx, String cmd, String stdin, Object wrkdir)
 {
     System.out.println("debug: " + cmd + " < " + stdin);
 
@@ -77,8 +79,10 @@ private CmdReturn runCmd(Ctx ctx, String cmd, String stdin)
     final Process[] process = new Process[1];
 
     new Thread(new Runnable() {public void run() {
-        
-        process[0] = Runtime.getRuntime().exec(cmd);
+
+        process[0] =
+            new ProcessBuilder(Arrays.asList(cmd.split(" "))).directory(wrkdir).start();
+
         new Thread(new Runnable() {public void run() {
             out.stdout = IOUtils.toString(process[0].getInputStream(), "UTF-8");
             ai.decrementAndGet();
@@ -113,6 +117,22 @@ private CmdReturn runCmd(Ctx ctx, String cmd, String stdin)
         }
     }
     return out;
+}
+
+public Object getAttachDir(Ctx ctx, Object collectorDoc)
+{
+    Object env = ctx.services.component.getInstance(Environment.class);
+    Object tempDir = env.getTemporaryDirectory();
+    Object file = new File(tempDir, "riscoss-collector-" + System.currentTimeMillis());
+    if (!file.mkdir()) { throw new RuntimeException("failed to create directory"); }
+    for (def att : collectorDoc.getAttachmentList()) {
+        def input = att.getAttachment().getContentInputStream(ctx.xcontext.getContext());
+        Object output = new FileOutputStream(new File(file, att.getFilename()));
+        IOUtils.copy(input, output);
+        IOUtils.closeQuietly(input);
+        IOUtils.closeQuietly(output);
+    }
+    return file;
 }
 
 private int uploadToRDR(String output, String rdrPath) throws Exception
@@ -193,7 +213,7 @@ private void runJob(Ctx ctx, Object entityDoc, Object collectorConf, Object sche
             }
         }
     }
-    CmdReturn res = runCmd(ctx, command, out.toString());
+    CmdReturn res = runCmd(ctx, command, out.toString(), getAttachDir(ctx, collectorDoc));
     System.out.println("debug: stdout: " + res.stdout);
     System.out.println("debug: stderr: " + res.stderr);
     System.out.println("debug: retcode: " + res.retcode);

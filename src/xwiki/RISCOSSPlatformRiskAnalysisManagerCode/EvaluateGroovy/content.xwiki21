@@ -23,8 +23,8 @@ public String getRemoteAnalyzerPath(Object services)
     Object permDir = env.getPermanentDirectory();
     Object file = new File(permDir, "riscoss-remote-risk-analyser.jar");
     if (!file.exists()) {
-    println("copying");
-        Object input = Thread.currentThread().getContextClassLoader().getResourceAsStream("riscoss-remote-risk-analyser.jar");
+        Object input = Thread.currentThread().getContextClassLoader().getResourceAsStream(
+            "riscoss-remote-risk-analyser.jar");
         Object output = new FileOutputStream(file);
         IOUtils.copy(input, output);
         IOUtils.closeQuietly(input);

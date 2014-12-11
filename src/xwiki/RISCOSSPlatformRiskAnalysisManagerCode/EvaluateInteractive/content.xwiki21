@@ -51,7 +51,9 @@ $xwiki.jsx.use($doc.fullName, {"minify" : false})
   ## sent by the SetData form when the user provides/overrides actual data.
   #if(!$request.setDataFromRequest)
     #set($rdr = $xwiki.getDocument("RISCOSSPlatformCode.RISCOSSConfiguration").get("rdr"))
-    #if($!rdids != "")
+    #if("$!rdr" == "")
+      {{error}}rdr is undefined{{/error}}
+    #elseif("$!rdids" != "")
       $riskData.putAll($raeUtils.fetchRiskData($rae, $rdr, $rdids))
     #else
       $riskData.putAll($raeUtils.fetchRiskData($rae, $rdr, $entityDocument.name))
@@ -84,11 +86,11 @@ $xwiki.jsx.use($doc.fullName, {"minify" : false})
 : [[$riskConfigurationDocument]]
 
 {{html}}
-<div id='resultData' style='display: none'>
+<div id="resultData" style="display: none">
 $escapetool.url($jsontool.serialize($structuredResults))
 </div>
 
-<div id='inputData' style='display: none'>
+<div id="inputData" style="display: none">
 $escapetool.url($jsontool.serialize($inputData))
 </div>
 {{/html}}

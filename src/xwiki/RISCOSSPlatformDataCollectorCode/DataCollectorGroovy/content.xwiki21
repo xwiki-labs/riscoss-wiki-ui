@@ -136,10 +136,50 @@ private int uploadToRDR(String output, String rdrPath) throws Exception
     return 0;
 }
 
+private List<String> getRiskConfigurations(Ctx ctx, Object entityDoc)
+{
+    String sql =
+        "from doc.object(RISCOSSPlatformRiskConfigurationManagerCode.RiskConfigurationClass) " +
+        "as conf, doc.object(RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass) " +
+        "as model " +
+        "where doc.space = 'RISCOSSPlatformRiskConfigurations' and " +
+        "conf.autoEvaluate = 1 and model.layer = :layer";
+
+    def entity = entityDoc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass");
+    String layer = getValue(entity, "layer");
+    return ctx.services.query.xwql(sql).bindValue("layer", layer).execute();
+}
+
+private boolean runEvals(Ctx ctx, Object entityDoc)
+{
+    boolean ok = true;
+    List<String> configs = getRiskConfigurations(ctx, entityDoc);
+    if (configs.size() == 0) { return ok; }
+    def EVAL_GROOVY_PG = "RISCOSSPlatformRiskAnalysisManagerCode.EvaluateGroovy";
+    def analyserAPI = ctx.xwiki.parseGroovyFromPage(EVAL_GROOVY_PG);
+
+    for (String config : configs) {
+        def sessionDoc = analyserAPI.getSessionDoc(ctx.xwiki, entityDoc.getFullName(), config, true);
+        def riskModels = analyserAPI.riskModelsForSession(ctx.xwiki, sessionDoc);
+        def inputs = analyserAPI.getInputs(ctx.services, riskModels);
+        def riskData = analyserAPI.getRiskData(ctx.services,
+                                               inputs,
+                                               analyserAPI.getRDRPath(ctx.xwiki),
+                                               entityDoc.getFullName());
+        def out = analyserAPI.evaluate(ctx.services, riskModels, riskData.getJSONObject("result"));
+        def output = out.optJSONObject("output");
+        def result = null;
+        if (output != null) { result = output.optJSONObject("result"); }
+        if (result == null) { ok = false; }
+        analyserAPI.storeResults(sessionDoc, result, inputs, out, System.currentTimeMillis());
+        println(out.getJSONObject("output").getJSONObject("result"));
+    }
+    return ok;
+}
+
 private void runJob(Ctx ctx, Object entityDoc, Object collectorConf, Object scheduleConf) {
     def collectorDoc = ctx.xwiki.getDocument(getValue(scheduleConf, "collectorName"));
     def collectorObj = collectorDoc.getObject("RISCOSSPlatformDataCollectorCode.DataCollectorClass");
-    def entity = entityDoc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass");
     String command = getValue(collectorObj, "command");
     String rdrPath = getRDRInfo(ctx);
     def out = new JSONObject();
@@ -164,7 +204,11 @@ private void runJob(Ctx ctx, Object entityDoc, Object collectorConf, Object sche
             "-----BEGIN RISK DATA-----".length());
         stdout = stdout.substring(0, stdout.indexOf("-----END RISK DATA-----"));
     }
-    if (uploadToRDR(stdout, rdrPath) == 0) {
+    if (!uploadToRDR(stdout, rdrPath) == 0) {
+        return;
+    } else if (!runEvals(ctx, entityDoc)) {
+        return;
+    } else {
         rescheduleJob(ctx, entityDoc, scheduleConf);
     }
 }

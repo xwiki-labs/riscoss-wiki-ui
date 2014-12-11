@@ -1,8 +1,9 @@
 {{velocity}}
+## -*- Mode:Velocity
 
 {{html wiki="true"}}
 
-<form action='$xwiki.getDocument('RISCOSSPlatformRiskAnalysisManagerCode.EvaluateInteractive').getURL()' method='POST'>
+<form action='$xwiki.getDocument('RISCOSSPlatformRiskAnalysisManagerCode.Evaluate').getURL()' method='POST'>
 
 <input type='hidden' name='entity' value='' id='entity'/>
 <input type='hidden' name='riskConfiguration' value='' id='riskConfiguration'/>
@@ -32,7 +33,7 @@
     "doc.name" : { "type" : "text" , "size" : 20, "link" : "view"},
     "description" : { "type" : "text", "html" : "true", "filterable" : "false"}
 })
-#set($options = { 
+#set($options = {
    "className":"RISCOSSPlatformRiskConfigurationManagerCode.RiskConfigurationClass",
    'pageSize' : false,
    'translationPrefix' : "riscossPlatform.riskConfigurationManager.riskConfigurationsTable.",

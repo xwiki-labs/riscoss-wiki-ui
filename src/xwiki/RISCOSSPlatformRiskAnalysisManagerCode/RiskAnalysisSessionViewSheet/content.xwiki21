@@ -1,18 +1,20 @@
 {{velocity}}
-$xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionViewSheet")
+## -*- Mode:Velocity
+$xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionViewSheet", {"minify":"false"})
 #set($riskAnalysisSessionObject = $doc.getObject('RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass'))
 #set($targetEntity = $xwiki.getDocument($riskAnalysisSessionObject.getProperty('entity').value))
 
 ; Target entity
-: $targetEntity.title
+: [[$targetEntity.getTitle()>>$targetEntity.getFullName()]]
 
 #set($riskEvaluations = $doc.getObjects('RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass'))
 |= Risk configuration |= Evaluation Results
 #foreach($riskEvaluation in $riskEvaluations)
   #set($riskConfiguration = $xwiki.getDocument($riskEvaluation.getProperty('riskConfiguration').value))
 | ((($riskConfiguration.title 
-  #if($riskEvaluation.getProperty('result').value == '')
-{{html wiki="true"}}
+
+#if($hasEdit)
+{{html clean="false"}}
     <form action="$xwiki.getURL('RISCOSSPlatformRiskAnalysisManagerCode.Evaluate')" method="POST">
       <input type="hidden" name="riskAnalysisSession" value="$doc.fullName"/>
       <input type="hidden" name="riskConfiguration" value="$riskConfiguration.fullName"/>
@@ -20,12 +22,17 @@ $xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionViewSh
       <input type="submit" value="Evaluate" class="button"/>
     </form>
 {{/html}}
-  #end
+#end
+
 ))) | (((
-  {{html}}
+  {{html clean="false"}}
     #if($riskEvaluation.getProperty('result').value != '')
-      <div class="resultData" style="display: none" riskConfiguration="$riskConfiguration.fullName">$riskEvaluation.getProperty('result').value</div>
-      <div class="resultInput" style="display: none">$riskEvaluation.getProperty('inputData').value</div>
+      <div class="resultData" style="display: none" riskConfiguration="$riskConfiguration.fullName">
+          $escapetool.url($riskEvaluation.getProperty('result').getValue())
+      </div>
+      <div class="resultInput" style="display: none">
+          $escapetool.url($riskEvaluation.getProperty('inputData').value)
+      </div>
     #end
   {{/html}}
 )))
@@ -33,10 +40,10 @@ $xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionViewSh
 
 ----
 
-{{html wiki="true"}}
+#if($hasEdit)
 #set($xredirect = $xwiki.getDocument("RISCOSSPlatformRiskConfigurations.WebHome").getURL())
-<span class="buttonwrapper">
+(% class="buttonwrapper" %)(((
 [[$services.localization.render("delete")>>$doc.getExternalURL("delete", "xredirect=${xredirect}")]]
-</span>
-{{/html}}
+)))
+#end
 {{/velocity}}

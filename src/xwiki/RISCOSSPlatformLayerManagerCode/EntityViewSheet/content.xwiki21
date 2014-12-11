@@ -20,7 +20,7 @@
 
 #if($!layerDocument.getObject("RISCOSSPlatformLayerManagerCode.LayerClass").getProperty("child").value != "")
 
-<form action="$xwiki.getDocument("RISCOSSPlatformLayerManagerCode.AddEntityChildren").getURL()" method="GET">
+<form action="$xwiki.getDocument('RISCOSSPlatformLayerManagerCode.AddEntityChildren').getURL()" method="GET">
     <input type="hidden" name="entity" value="$doc.fullName"/>    
     <h1>$services.localization.render("riscossPlatform.layerManager.children") <input type="image" src="$xwiki.getSkinFile("icons/silk/add.png")"/></h1>
 </form>

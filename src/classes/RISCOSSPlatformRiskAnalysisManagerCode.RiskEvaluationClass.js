@@ -1,12 +1,5 @@
 XClass(function (xcl, XWiki) {
   var props = XWiki.model.properties;
-  xcl.setCustomClass("");
-  xcl.setCustomMapping("");
-  xcl.setDefaultViewSheet("");
-  xcl.setDefaultEditSheet("");
-  xcl.setDefaultWeb("");
-  xcl.setNameField("");
-  xcl.setValidationScript("");
   xcl.addProp("inputData", props.TextArea.create({
     "customDisplay": "",
     "editor": "---",
@@ -26,6 +19,20 @@ XClass(function (xcl, XWiki) {
     "size": "40",
     "validationMessage": "",
     "validationRegExp": ""
+  }));
+  xcl.addProp("rawOutput", props.TextArea.create({
+    "customDisplay": "",
+    "editor": "---",
+    "picker": "0",
+    "prettyName": "result",
+    "rows": "5",
+    "size": "40",
+    "validationMessage": "",
+    "validationRegExp": ""
+  }));
+  xcl.addProp("timeLastRun", props.XNumber.create({
+    "numberType": "long",
+    "prettyName": "Time Last Evaluated",
   }));
   xcl.addProp("riskConfiguration", props.XString.create({
     "customDisplay": "",

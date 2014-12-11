@@ -1,0 +1,211 @@
+/* -*- Mode: Java */
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.xwiki.environment.Environment;
+import java.io.File;
+import java.io.FileOutputStream;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+
+public class EvaluateAPI {
+
+public JSONObject parseJSON(String stdout)
+{
+    return new JSONObject(stdout);
+}
+
+public String getRemoteAnalyzerPath(Object services)
+{
+    Object env = services.component.getInstance(Environment.class);
+    Object permDir = env.getPermanentDirectory();
+    Object file = new File(permDir, "riscoss-remote-risk-analyser.jar");
+    if (!file.exists()) {
+    println("copying");
+        Object input = Thread.currentThread().getContextClassLoader().getResourceAsStream("riscoss-remote-risk-analyser.jar");
+        Object output = new FileOutputStream(file);
+        IOUtils.copy(input, output);
+        IOUtils.closeQuietly(input);
+        IOUtils.closeQuietly(output);
+    }
+    return ""+file;
+}
+
+private Object getRAEWithModels(Object services, List<String> riskModels)
+{
+    def rae = services.riscoss.riskAnalysisEngineService.createInstance();
+    for (int i = 0; i < riskModels.size(); i++) {
+        rae.loadModel(riskModels.get(i));
+    }
+    return rae;
+}
+
+private JSONObject runEvaluator(Object services, JSONObject params)
+{
+    def rap = getRemoteAnalyzerPath(services);
+    JSONObject out = services.commandRunner.run("java -jar " + rap, params.toString(), 30000);
+    String stdout = out.getString("stdout");
+    String BEGIN = "-----BEGIN ANALYSIS OUTPUT-----";
+    String END = "-----END ANALYSIS OUTPUT-----";
+    if (stdout != null) {
+        int beginIndex = stdout.indexOf(BEGIN);
+        int endIndex = stdout.indexOf(END);
+        if (beginIndex > -1 && endIndex > -1) {
+            String output = stdout.substring(beginIndex + BEGIN.length(), endIndex);
+            out.put("output", new JSONObject(output));
+        }
+    }
+    return out;
+}
+
+public JSONObject evaluate(Object services, List<String> riskModels, JSONObject riskData)
+{
+    return runEvaluator(services, new JSONObject([
+        "action": "evaluate",
+        "inputs": riskData,
+        "riskModels": riskModels
+    ]));
+}
+
+public JSONObject getInputs(Object services, List<String> riskModels)
+{
+    return runEvaluator(services, new JSONObject([
+        "action": "getInputs",
+        "riskModels": riskModels
+    ]));
+}
+
+public JSONObject getRiskData(Object services,
+                              JSONObject inputs,
+                              String riskDataRepositoryURI,
+                              String targetName)
+{
+    JSONObject result = new JSONObject();
+    JSONArray errors = new JSONArray();
+    JSONArray warnings = new JSONArray();
+
+    inputs = inputs.getJSONObject("output");
+    inputs = inputs.getJSONObject("result");
+
+    try {
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        for (String name : JSONObject.getNames(inputs)) {
+            JSONObject output = inputs.optJSONObject(name);
+            if (output == null) { continue; }
+            HttpGet get =
+                    new HttpGet(
+                            String.format("%s/%s?id=%s&limit=1", riskDataRepositoryURI,
+                                    URLEncoder.encode(targetName, "UTF-8"), URLEncoder.encode(
+                                            name, "UTF-8")));
+            CloseableHttpResponse response = client.execute(get);
+
+            if (response.getStatusLine().getStatusCode() != 200) {
+                errors.put(String.format("Error retrieving risk data for %s: %s", name,
+                        response.getStatusLine().getReasonPhrase()));
+            } else {
+                JSONObject o = new JSONObject(IOUtils.toString(response.getEntity().getContent()));
+                JSONArray riskDataArray = o.getJSONArray("results");
+                if (riskDataArray.length() != 0) {
+                    JSONObject riskData = riskDataArray.getJSONObject(0);
+                    output.put("value", riskData.get("value"));
+                }
+            }
+            result.put(name, output);
+        }
+    } catch (IOException e) {
+        errors.put(String.format("Error fetching risk data from %s", riskDataRepositoryURI), e);
+    }
+
+    JSONObject out = new JSONObject();
+    out.put("result", result);
+    out.put("errors", errors);
+    out.put("warnings", warnings);
+    return out;
+}
+
+private String RISK_SESS_CLS = "RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass";
+private String RISK_EVAL_CLS = "RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass";
+
+public String targetForSession(Object sessionDoc)
+{
+    def riskSessionObj = sessionDoc.getObject(RISK_SESS_CLS);
+    return riskSessionObj.getProperty("entity").getValue();
+}
+
+public List<String> riskModelsForSession(Object xwiki, Object sessionDoc)
+{
+    def RISK_MODEL_PTR_CLS = "RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass";
+    def RISK_MODEL_CLS = "RISCOSSPlatformModelManagerCode.RiskModelClass";
+    def ENTITY_CLS = "RISCOSSPlatformLayerManagerCode.EntityClass";
+    def EVAL_GROOVY_PG = "RISCOSSPlatformRiskAnalysisManagerCode.EvaluateGroovy";
+
+    def riskEvalObj = sessionDoc.getObject(RISK_EVAL_CLS);
+    def riskConfDocName = riskEvalObj.getProperty("riskConfiguration").getValue();
+    def riskConfDoc = xwiki.getDocument(riskConfDocName);
+    def targetDocName = targetForSession(sessionDoc);
+    def targetDoc = xwiki.getDocument(targetDocName);
+    def layer = targetDoc.getObject(ENTITY_CLS).getProperty("layer").getValue();
+
+    def riskModels = new ArrayList<String>();
+    for (def riskModel : riskConfDoc.getObjects(RISK_MODEL_PTR_CLS, "layer", layer)) {
+        def riskModelDoc = xwiki.getDocument(riskModel.getProperty("riskModel").getValue());
+        def attachName = riskModelDoc.getObject(RISK_MODEL_CLS).getProperty("riskModelData").getValue();
+        def riskModelData = riskModelDoc.getAttachment(attachName).getContentAsString();
+        riskModels.add(riskModelData);
+    }
+    return riskModels;
+}
+
+public Object getSessionDoc(Object xwiki, String targetName, String riskConfig, boolean create)
+{
+    if (riskConfig.indexOf('.') == -1) {
+        riskConfig = "RISCOSSPlatformRiskConfigurations." + riskConfig;
+    }
+    if (targetName.indexOf('.') == -1) {
+        riskConfig = "RISCOSSPlatformEntities." + targetName;
+    }
+
+    def riskConfDoc = xwiki.getDocument(riskConfig);
+    if (riskConfDoc.isNew()) { return "ERROR_riskConfig_nonexistant"; }
+    def targetDoc = xwiki.getDocument(targetName);
+    if (targetDoc.isNew()) { return "ERROR_targetName_nonexistant"; }
+
+    def sessionDoc = xwiki.getDocument("RISCOSSPlatformRiskAnalysisSessions",
+        targetName.substring(targetName.lastIndexOf('.')+1) +
+        "_evaluatedWith_" +
+        riskConfig.substring(riskConfig.lastIndexOf('.')+1));
+    if (sessionDoc.isNew()) {
+        if (!create) { return "no_such_session"; }
+        def riskEvalObj = sessionDoc.getObject(RISK_EVAL_CLS, true);
+        riskEvalObj.set("riskConfiguration", riskConfDoc.getFullName());
+        def riskSessionObj = sessionDoc.getObject(RISK_SESS_CLS, true);
+        riskSessionObj.set("entity", targetDoc.getFullName());
+        sessionDoc.saveWithProgrammingRights("Created new risk analysis session");
+    }
+    return sessionDoc;
+}
+
+public void storeResults(Object sessionDoc,
+                         JSONObject results,
+                         JSONObject inputs,
+                         JSONObject raw,
+                         long now)
+{
+    def riskEvalObj = sessionDoc.getObject(RISK_EVAL_CLS, false);
+    riskEvalObj.set("inputData", inputs ? inputs.toString() : "");
+    riskEvalObj.set("result", results ? results.toString() : "");
+    riskEvalObj.set("rawOutput", raw ? raw.toString() : "");
+    riskEvalObj.set("timeLastRun", now);
+    sessionDoc.saveWithProgrammingRights("Saved results to risk analysis session");
+}
+
+public String getRDRPath(Object xwiki)
+{
+    def config = xwiki.getDocument("RISCOSSPlatformCode.RISCOSSConfiguration");
+    def configObj = config.getObject("RISCOSSPlatformCode.RISCOSSConfiguration");
+    return configObj.getProperty("rdr").getValue();
+}
+
+}

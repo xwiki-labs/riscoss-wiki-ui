@@ -1,202 +1,110 @@
 {{velocity}}
 ## -*- Mode: Velocity
 ##
-#set($RISK_SESS_CLS = "RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass")
-#set($RISK_EVAL_CLS = "RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass")
-#set($RISK_MODEL_PTR_CLS = "RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass")
-#set($RISK_MODEL_CLS = "RISCOSSPlatformModelManagerCode.RiskModelClass")
-#set($ENTITY_CLS = "RISCOSSPlatformLayerManagerCode.EntityClass")
-#set($CONFIG_CLS = "RISCOSSPlatformCode.RISCOSSConfiguration")
 #set($EVAL_GROOVY_PG = "RISCOSSPlatformRiskAnalysisManagerCode.EvaluateGroovy")
+#set ($analyserAPI = $xwiki.parseGroovyFromPage($EVAL_GROOVY_PG))
 ##
-#if(!$request.riskAnalysisSession)
-  {{error}} Missing parameters {{/error}}
-#else
-  ## Load all the models associated to the layer of the entity under analysis.
-  #set($sessionDoc = $xwiki.getDocument($request.riskAnalysisSession))
-
-  #set($riskEvalObj = $sessionDoc.getObject($RISK_EVAL_CLS))
-  #set($riskConfDocName = $riskEvalObj.getProperty('riskConfiguration').getValue())
-  #set($riskConfDoc = $xwiki.getDocument($riskConfDocName))
-  #set($riskSessionObj = $sessionDoc.getObject($RISK_SESS_CLS))
-  #set($targetDocName = $riskSessionObj.getProperty('entity').getValue())
-  #set($targetDoc = $xwiki.getDocument($targetDocName))
-
-  #set($layer = $targetDoc.getObject($ENTITY_CLS).getProperty("layer").value)
-  #set($rdids = $targetDoc.getName())
-  #set($raeUtils = $services.riscoss.riskAnalysisEngineUtilsService)
-  #set($rae = $services.riscoss.riskAnalysisEngineService.createInstance())
-  #set($riskModels = $riskConfDoc.getObjects($RISK_MODEL_PTR_CLS, "layer", $layer))
-  #set($riskModelStrings = [])
-  #foreach($riskModel in $riskModels)
-    #set($riskModelDoc = $xwiki.getDocument($riskModel.getProperty("riskModel").value))
-    #set($attachName = $riskModelDoc.getObject($RISK_MODEL_CLS).getProperty("riskModelData").value)
-    #set($riskModelData = $riskModelDoc.getAttachment($attachName).getContentAsString())
-    $riskModelStrings.add($riskModelData)
-    $rae.loadModel($riskModelData)
-  #end
-  
-  ## This is the risk data that will contain the final aggregated risk data ready to be evaluated
-  #set($riskData = {})
-  #set($errors = {})
-
-  ## Get risk data from the request. This also initializes the default values when they're missing.
-  #set($riskDataFromRequest = $raeUtils.getRiskDataFromRequest($rae, $request.parameterMap))
-
-  $riskData.putAll($riskDataFromRequest.riskData)
-  $errors.putAll($riskDataFromRequest.errors)
-
-  ## If the page has been loaded for the first time, and not as a result of a evaluate submit, override the default values with the ones coming from the RDR (if any)
-  #if(!$request.evaluate)
-
-    #set ($confDoc = $xwiki.getDocument($CONFIG_CLS))
-    #set ($conf = $confDoc.getObject($CONFIG_CLS))
-    #set ($url = $conf.getProperty('rdr').getValue())
-    $riskData.putAll($raeUtils.fetchRiskData($rae, $url, $rdids))
-  #end
-$errors
-  ## If there was an evaluation request, and no errors are found in the data sent from the filled form, then perform the evaluation
-  #if($request.evaluate && $errors.size() == 0)
-
-    #set ($params = {
-      "requestMap": $request.getParameterMap(),
-      "riskModels": $riskModelStrings
-    })
-
-    #set ($analyserAPI = $xwiki.parseGroovyFromPage($EVAL_GROOVY_PG))
-    #set ($remoteAnalyzer = $analyserAPI.getRemoteAnalyzerPath($services))
-    #set ($ret = $services.commandRunner.run("java -jar $remoteAnalyzer", $jsontool.serialize($params), 30000))
-
-    #if("$ret.stdout.indexOf('-----BEGIN ANALYSIS OUTPUT-----')" == "-1"
-        || "$ret.stdout.indexOf('-----END ANALYSIS OUTPUT-----')" == "-1"
-        || "$ret.ret" != "0")
-
-        {{error}}
-            ret: $ret.ret
-            stdout: {{{ $ret.stdout }}}
-            stderr: {{{ $ret.stderr }}}
-        {{/error}}
-
-    #else
-        #set($stdout = $ret.stdout.split("-----BEGIN ANALYSIS OUTPUT-----")[1])
-        #set($stdout = $stdout.split("-----END ANALYSIS OUTPUT-----")[0])
-
-        #set($result = $analyserAPI.parseJSON($stdout))
-
-        #if ("$result.warnings" != "[]")
-
-            ## TODO: we can't display this here because the user is redirected
-            ##{{warning}} {{{ $result.warnings }}} {{/warning}}
-
-        #end
-        #if ("$ret.stderr" != "")
-
-            {{warning}} {{{ $ret.stderr }}} {{/warning}}
-
-        #end
-        #if ($result.opt("error"))
-
-            {{error}} {{{ $result.error }}} {{/error}}
-
-        #else
-
-            ## everything is ok, save the content...
-            #set($riskEvaluationObject = $sessionDoc.getObject(
-                $RISK_EVAL_CLS, "riskConfiguration", $riskConfDocName))
-            #if(!$riskEvaluationObject) 
-              #set($n = $sessionDoc.createObject($RISK_EVAL_CLS))
-              #set($riskEvaluationObject =
-                  $sessionDoc.getObject($RISK_EVAL_CLS, $n))
-            #end
-
-            $riskEvaluationObject.set("riskConfiguration", $riskConfDocName)
-            $riskEvaluationObject.set("result", $result.result)
-
-            $sessionDoc.save("Evaluation of ${riskConfDocName}")
-
-            ## and redirect the user...
-            ##$response.sendRedirect($sessionDoc.getURL())
-        #end
-    #end
+#set($ok = false)
+#set($riskAnalysisSession = $request.getParameter('riskAnalysisSession'))
+#if (!$riskAnalysisSession)
+  #if("$!request.getParameter('entity')" == "")
+    {{error}}Missing "entity" parameter{{/error}}
+  #elseif("$!request.getParameter('riskConfiguration')" == "")
+    {{error}}Missing "riskConfiguration" parameter{{/error}}
   #else
-    #set($inputChunks = $services.riscoss.riskAnalysisEngineUtilsService.getInputs($rae))
-
-{{html}}
-
-<form method="POST">
-  <input type="hidden" name="evaluate" value="true"/>
-  <input type="hidden" name="riskAnalysisSession" value="${request.riskAnalysisSession}"/>
-<table>
-    #foreach($inputChunk in $inputChunks)
-  <tr>
-    <td>$services.riscoss.riskAnalysisEngineUtilsService.getQuestion($rae, $inputChunk)</td>
-    <td>
-      #set($field = $services.riscoss.riskAnalysisEngineUtilsService.getInputField($rae, $inputChunk)) ##
-      #set($dataType = $field.getDataType())
-      #if($dataType == "EVIDENCE")
-      <table>
-        <tr>
-          ## Use the value from the actual request object or the one from the parsed risk data, depending on whether there are errors.
-          #if($errors.get($inputChunk.id))
-            #set($value = $request.parameterMap.get($inputChunk.id)[0])
-          #else
-            #set($value = $riskData.get($inputChunk.id).positive)
-          #end
-          <td><input type="text" name="${inputChunk.id} value="$!value"/></td>
-          ## Use the value from the actual request object or the one from the parsed risk data, depending on whether there are errors.
-          #if($errors.get($inputChunk.id))
-            #set($value = $request.parameterMap.get($inputChunk.id)[1])
-          #else
-            #set($value = $riskData.get($inputChunk.id).negative)
-          #end
-          <td><input type="text" name="${inputChunk.id} value="$!value"/></td>
-        </tr>
-      </table>
-      #elseif($dataType == "DISTRIBUTION")
-      <table>
-        <tr>
-          #set($i = 0)
-          #foreach($v in $field.value.values)
-            ## Use the value from the actual request object or the one from the parsed risk data, depending on whether there are errors.
-            #if($errors.get($inputChunk.id))
-              #set($value = $request.parameterMap.get($inputChunk.id)[$i])
-            #else
-              #set($value = $riskData.get($inputChunk.id).values.get($i))
-            #end
-          <td><input type="text" name="${inputChunk.id}" value="$!value"/></td>
-            #set($i = $i + 1)
-          #end
-        </tr>
-      </table>
-      #elseif($dataType == "INTEGER")
-        #if($errors.get($inputChunk.id))
-          #set($value = $request.parameterMap.get($inputChunk.id)[0])
-        #else
-          #set($value = $riskData.get($inputChunk.id))
-        #end
-      <input type="text" name="${inputChunk.id}" value="$!value"/>
-      #elseif($dataType == "REAL")
-        ## Use the value from the actual request object or the one from the parsed risk data, depending on whether there are errors.
-        #if($errors.get($inputChunk.id))
-          #set($value = $request.parameterMap.get($inputChunk.id)[0])
-        #else
-          #set($value = $riskData.get($inputChunk.id))
-        #end
-      <input type="text" name="${inputChunk.id}" value="$!value"/>
-      #elseif($dataType == "STRING")
-      <input type="text" name="${inputChunk.id}" value="$!value"/>
-      #else
-      -
-      #end
-      #if($errors.get($inputChunk.id)) $errors.get($inputChunk.id) #end
-    </td>
-  </tr>
-    #end  
-</table>
-<input type="submit" value="Evaluate" class="button"/>
-</form>
-{{/html}}
+    #set($sessionDoc = $analyserAPI.getSessionDoc($xwiki,
+                                                  $request.getParameter('entity'),
+                                                  $request.getParameter('riskConfiguration'),
+                                                  true))
+    #if("$!sessionDoc" == "ERROR_riskConfig_nonexistant")
+      {{error}}Parameter "riskConfiguration" points to nonexistant document{{/error}}
+    #elseif("$!sessionDoc" == "ERROR_targetName_nonexistant")
+      {{error}}Parameter "entity" points to nonexistant document{{/error}}
+    #else
+      #set($riskAnalysisSession = $sessionDoc.getFullName())
+      #set($ok = true)
+    #end
   #end
-     
+#else
+  #set($sessionDoc = $xwiki.getDocument($riskAnalysisSession))
+  #if($sessionDoc.isNew())
+    #set($ok = false)
+    {{error}}Parameter "riskAnalysisSession" points to nonexistant document{{/error}}
+  #end
+#end
+##
+#if($ok == true)
+  #set($inputs = $analyserAPI.getInputs($xcontext, $sessionDoc))
+  #if ($inputs.getString("ret") != "0" || "$!inputs.optJSONObject('output')" == "")
+    #set($ok = false)
+    {{error}}
+      Failed to get input values
+      RETCODE: $inputs.getString("ret")
+
+      STDOUT:
+
+      {{code language=none}}
+        $inputs.getString("stdout")
+      {{/code}}
+
+      STDERR:
+
+      {{code language=none}}
+        $inputs.getString("stderr")
+      {{/code}}
+
+    {{/error}}
+  #end
+#end
+##
+#if($ok == true)
+  #set($entityDocName = $analyserAPI.targetForSession($sessionDoc))
+  #set($riskData =
+    $analyserAPI.getRiskData($services, $inputs, $analyserAPI.getRDRPath($xwiki), $entityDocName))
+  #set($errout = $riskData.getJSONArray("errors"))
+  #if($errout.length() > 0)
+    #set($ok = false)
+    {{error}}
+      Failed to data from RDR
+      #foreach($err in $errout)
+
+        {{code language=none}}$err{{/code}}
+
+      #end
+    {{/error}}
+  #end
+#end
+##
+#if($ok == true)
+  #set($outRaw = $analyserAPI.evaluate($xcontext, $sessionDoc, $riskData))
+  #set($output = $outRaw.optJSONObject("output"))
+  #set($result = "")
+  #if($output)
+    #set($result = $output.optJSONObject("result"))
+  #end
+  #if("$!result" == "")
+    #set($ok = false)
+    {{error}}
+      Failed to run evaluation
+      RETCODE: $outRaw.getString("ret")
+      STDOUT:
+
+      {{code language=none}}
+        $outRaw.getString("stdout")
+      {{/code}}
+
+      STDERR:
+
+      {{code language=none}}
+        $outRaw.getString("stderr")
+      {{/code}}
+
+    {{/error}}
+  #end
+#end
+##
+#if($ok == true)
+  $analyserAPI.storeResults($sessionDoc, $result, $inputs, $outRaw, 0)##
+  $response.sendRedirect($sessionDoc.getURL())
 #end
 {{/velocity}}

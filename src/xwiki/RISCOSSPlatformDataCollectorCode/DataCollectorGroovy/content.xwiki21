@@ -1,6 +1,7 @@
 /* -*- Mode:Java
  * Groovy code for data collectors.
  */
+import java.io.File;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import java.util.ArrayList;
@@ -119,18 +120,36 @@ private CmdReturn runCmd(Ctx ctx, String cmd, String stdin, Object wrkdir)
     return out;
 }
 
-public Object getAttachDir(Ctx ctx, Object collectorDoc)
+// Copied from EvaluateGroovy, keep in sync, TODO: fix
+public File getAttachFile(Object services, Object xcontext, Object attachment)
 {
-    Object env = ctx.services.component.getInstance(Environment.class);
-    Object tempDir = env.getTemporaryDirectory();
-    Object file = new File(tempDir, "riscoss-collector-" + System.currentTimeMillis());
-    if (!file.mkdir()) { throw new RuntimeException("failed to create directory"); }
-    for (def att : collectorDoc.getAttachmentList()) {
-        def input = att.getAttachment().getContentInputStream(ctx.xcontext.getContext());
-        Object output = new FileOutputStream(new File(file, att.getFilename()));
+    Object env = services.component.getInstance(Environment.class);
+    File tempDir = env.getTemporaryDirectory();
+    File dir = new File(tempDir, "riscoss-" + attachment.getDocument().getFullName());
+    File file = new File(dir, attachment.getFilename());
+    if (!dir.isDirectory()) {
+        if (!dir.mkdir()) { throw new RuntimeException("failed to make directory"); }
+    }
+    if (!file.exists()) {
+        def input = attachment.getAttachment().getContentInputStream(xcontext.getContext());
+        Object output = new FileOutputStream(file);
         IOUtils.copy(input, output);
         IOUtils.closeQuietly(input);
         IOUtils.closeQuietly(output);
+    }
+    if (!file.exists()) { throw new RuntimeException("[" + file + "] nonexistant"); }
+    if (file.length() != attachment.getFilesize()) {
+        throw new RuntimeException("[" + file + "] wrong length: expected: [" +
+            attachment.getFilesize() + "] got: [" + file.length() + "]");
+    }
+    return file;
+}
+// Copied from EvaluateGroovy, keep in sync, TODO: fix
+public File getAttachDir(Object services, Object xcontext, Object collectorDoc)
+{
+    File file = new File(System.getProperty("user.dir"));
+    for (def att : collectorDoc.getAttachmentList()) {
+        file = getAttachFile(services, xcontext, att).getParentFile()
     }
     return file;
 }
@@ -180,13 +199,13 @@ private boolean runEvals(Ctx ctx, Object entityDoc)
 
     for (String config : configs) {
         def sessionDoc = analyserAPI.getSessionDoc(ctx.xwiki, entityDoc.getFullName(), config, true);
-        def riskModels = analyserAPI.riskModelsForSession(ctx.xwiki, sessionDoc);
-        def inputs = analyserAPI.getInputs(ctx.services, riskModels);
+        def inputs = analyserAPI.getInputs(ctx.services, ctx.xwiki, sessionDoc);
+System.out.println("xxx [" + inputs.getString("stdout") + "]");
         def riskData = analyserAPI.getRiskData(ctx.services,
                                                inputs,
                                                analyserAPI.getRDRPath(ctx.xwiki),
                                                entityDoc.getFullName());
-        def out = analyserAPI.evaluate(ctx.services, riskModels, riskData.getJSONObject("result"));
+        def out = analyserAPI.evaluate(ctx.services, ctx.xwiki, sessionDoc, riskData);
         def output = out.optJSONObject("output");
         def result = null;
         if (output != null) { result = output.optJSONObject("result"); }
@@ -213,7 +232,8 @@ private void runJob(Ctx ctx, Object entityDoc, Object collectorConf, Object sche
             }
         }
     }
-    CmdReturn res = runCmd(ctx, command, out.toString(), getAttachDir(ctx, collectorDoc));
+    CmdReturn res = runCmd(
+        ctx, command, out.toString(), getAttachDir(ctx.services, ctx.xcontext, collectorDoc));
     System.out.println("debug: stdout: " + res.stdout);
     System.out.println("debug: stderr: " + res.stderr);
     System.out.println("debug: retcode: " + res.retcode);

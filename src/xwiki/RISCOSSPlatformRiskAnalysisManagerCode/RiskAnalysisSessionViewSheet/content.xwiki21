@@ -13,7 +13,7 @@ $xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionViewSh
   #set($riskConfiguration = $xwiki.getDocument($riskEvaluation.getProperty('riskConfiguration').value))
 | ((($riskConfiguration.title 
 
-#if($hasEdit)
+#if(false && $hasEdit)
 {{html clean="false"}}
     <form action="$xwiki.getURL('RISCOSSPlatformRiskAnalysisManagerCode.Evaluate')" method="POST">
       <input type="hidden" name="riskAnalysisSession" value="$doc.fullName"/>

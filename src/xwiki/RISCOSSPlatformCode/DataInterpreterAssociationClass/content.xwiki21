@@ -1,0 +1,4 @@
+{{info}}
+This class associates a DataInterpreter with the RiskConfiguration, objects of this class
+should be attached to the RiskConfiguration document
+{{/info}}

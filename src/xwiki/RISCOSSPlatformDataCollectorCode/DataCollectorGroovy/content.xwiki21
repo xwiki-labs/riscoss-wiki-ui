@@ -130,6 +130,9 @@ public File getAttachFile(Object services, Object xcontext, Object attachment)
     if (!dir.isDirectory()) {
         if (!dir.mkdir()) { throw new RuntimeException("failed to make directory"); }
     }
+    if (file.exists() && file.length() != attachment.getFilesize()) {
+        file.delete();
+    }
     if (!file.exists()) {
         def input = attachment.getAttachment().getContentInputStream(xcontext.getContext());
         Object output = new FileOutputStream(file);

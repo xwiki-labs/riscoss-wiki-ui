@@ -54,27 +54,30 @@ private JSONObject runEvaluator(Object services, String cmd, String riskModels, 
     return out;
 }
 
-private JSONObject runInterpreter(Object services,
-                                  Object xcontext,
-                                  String cmd,
-                                  Object sessionDoc,
-                                  JSONObject inputs)
+public JSONObject runInterpreter(Object services,
+                                 Object xcontext,
+                                 Object xwiki,
+                                 String cmd,
+                                 Object sessionDoc,
+                                 JSONObject inputs)
 {
     def INTERPRETER_ASSOC = "RISCOSSPlatformCode.DataInterpreterAssociationClass";
     def INTERPRETER_CLS = "RISCOSSPlatformCode.DataInterpreterClass";
 
-    def io = sessionDoc.getObject(INTERPRETER_ASSOC);
-    if (io == null) { return inputs; }
+    def riskEvalObj = sessionDoc.getObject(RISK_EVAL_CLS);
+    def riskConfDoc = xwiki.getDocument(riskEvalObj.getProperty("riskConfiguration").getValue());
+    def io = riskConfDoc.getObject(INTERPRETER_ASSOC);
+    if (io == null) { return null; }
     def interpreterName = io.getProperty("interpreterName").getValue();
     def interpreterDoc = xwiki.getDocument(interpreterName);
-    if (interpreterDoc.isNew()) { return inputs; }
+    if (interpreterDoc.isNew()) { return null; }
     def interpreterObj = interpreterDoc.getObject(INTERPRETER_CLS);
 
     def command = interpreterObj.getProperty("command").getValue();
     File workDir = getAttachDir(services, xcontext, interpreterDoc);
 
     JSONObject out = new JSONObject(
-        services.commandRunner.run(command + " " + cmd, inputs.toString(), 120000, ""+workDir)
+        services.commandRunner.run(command + " " + cmd + " -", inputs.toString(), 120000, ""+workDir)
     );
 
     String stdout = out.getString("stdout");
@@ -84,8 +87,9 @@ private JSONObject runInterpreter(Object services,
         int beginIndex = stdout.indexOf(BEGIN);
         int endIndex = stdout.indexOf(END);
         if (beginIndex > -1 && endIndex > -1) {
-            String output = stdout.substring(beginIndex + BEGIN.length(), endIndex);
-            out.put("output", new JSONObject(output));
+            String outputStr = stdout.substring(beginIndex + BEGIN.length(), endIndex);
+            def output = new JSONObject(outputStr);
+            out.put("output", output);
         }
     }
     return out;
@@ -97,10 +101,23 @@ private Object getServices(Object xcontext)
     return vcontext.get("services");
 }
 
+private Object getXWiki(Object xcontext)
+{
+    def vcontext = xcontext.get("vcontext");
+    return vcontext.get("xwiki");
+}
+
 public JSONObject evaluate(Object xcontext, Object sessionDoc, JSONObject riskData)
 {
-    JSONObject inputs =
-        runInterpreter(getServices(xcontext), xcontext, "evaluate", sessionDoc, riskData);
+    JSONObject inputs = runInterpreter(getServices(xcontext),
+                                       xcontext,
+                                       getXWiki(xcontext),
+                                       "evaluate",
+                                       sessionDoc,
+                                       riskData);
+    if (inputs != null) {
+        riskData = inputs.getJSONObject("output");
+    }
     String riskModels = riskModelsForSession(xcontext, sessionDoc);
     return runEvaluator(getServices(xcontext), "evaluate", riskModels, riskData);
 }
@@ -108,13 +125,17 @@ public JSONObject evaluate(Object xcontext, Object sessionDoc, JSONObject riskDa
 public JSONObject getInputs(Object xcontext, Object sessionDoc)
 {
     JSONObject empty = new JSONObject();
-    JSONObject inputs =
-        runInterpreter(getServices(xcontext), xcontext, "getInputs", sessionDoc, empty);
-    if (inputs != empty) {
+    JSONObject inputs = runInterpreter(getServices(xcontext),
+                                       xcontext,
+                                       getXWiki(xcontext),
+                                       "getInputs",
+                                       sessionDoc,
+                                       empty);
+    if (inputs != null) {
         return inputs;
     }
     String riskModels = riskModelsForSession(xcontext, sessionDoc);
-    return runEvaluator(getServices(xcontext), "getInputs", riskModels, empty);
+    return runEvaluator(getServices(xcontext), "getInputs", riskModels, inputs);
 }
 
 public JSONObject getRiskData(Object services,
@@ -122,17 +143,16 @@ public JSONObject getRiskData(Object services,
                               String riskDataRepositoryURI,
                               String targetName)
 {
-    JSONObject result = new JSONObject();
     JSONArray errors = new JSONArray();
     JSONArray warnings = new JSONArray();
 
-    inputs = inputs.getJSONObject("output");
-    inputs = inputs.getJSONObject("result");
+    def inputOutput = inputs.getJSONObject("output");
+    def inputResult = inputOutput.getJSONObject("result");
 
     try {
         CloseableHttpClient client = HttpClientBuilder.create().build();
-        for (String name : JSONObject.getNames(inputs)) {
-            JSONObject output = inputs.optJSONObject(name);
+        for (String name : JSONObject.getNames(inputResult)) {
+            JSONObject output = inputResult.optJSONObject(name);
             if (output == null) { continue; }
             HttpGet get =
                     new HttpGet(
@@ -152,14 +172,14 @@ public JSONObject getRiskData(Object services,
                     output.put("value", riskData.get("value"));
                 }
             }
-            result.put(name, output);
+            inputResult.put(name, output);
         }
     } catch (IOException e) {
         errors.put(String.format("Error fetching risk data from %s", riskDataRepositoryURI), e);
     }
 
     JSONObject out = new JSONObject();
-    out.put("result", result);
+    out.put("result", inputResult);
     out.put("errors", errors);
     out.put("warnings", warnings);
     return out;
@@ -183,6 +203,9 @@ public File getAttachFile(Object services, Object xcontext, Object attachment)
     File file = new File(dir, attachment.getFilename());
     if (!dir.isDirectory()) {
         if (!dir.mkdir()) { throw new RuntimeException("failed to make directory"); }
+    }
+    if (file.exists() && file.length() != attachment.getFilesize()) {
+        file.delete();
     }
     if (!file.exists()) {
         def input = attachment.getAttachment().getContentInputStream(xcontext.getContext());

@@ -1,0 +1,23 @@
+riscossPlatform.modelManager.newGoalModel=New goal model
+riscossPlatform.modelManager.goalModelName=Goal model name
+riscossPlatform.modelManager.goalModelsList.title=RISCOSS Platform Goal Models
+riscossPlatform.modelManager.goalModelsTable.doc.name=Goal model
+riscossPlatform.modelManager.goalModelsTable.description=Description
+riscossPlatform.modelManager.newRiskCategory=New risk category
+riscossPlatform.modelManager.riskCategoryName=Risk category name
+riscossPlatform.modelManager.uploadRiskModel=Upload risk model XML
+riscossPlatform.modelManager.uploadImpactModel=Upload impact model XML
+riscossPlatform.modelManager.uploadGoalModel=Upload goal model XML
+riscossPlatform.modelManager.goalModelIndex=Goal model index
+riscossPlatform.modelManager.newRiskModel=New risk model
+riscossPlatform.modelManager.riskModelName=Risk model name
+riscossPlatform.modelManager.riskModelsList.title=RISCOSS Platform Risk Models
+riscossPlatform.modelManager.riskModelsTable.doc.name=Risk model
+riscossPlatform.modelManager.riskModelsTable.description=Description
+riscossPlatform.modelManager.newRiskCategory=New risk category
+riscossPlatform.modelManager.riskCategoryName=Risk category name
+riscossPlatform.modelManager.uploadRiskModel=Upload risk model XML
+riscossPlatform.modelManager.uploadImpactModel=Upload impact model XML
+riscossPlatform.modelManager.uploadRiskModel=Upload risk model XML
+riscossPlatform.modelManager.riskModelIndex=Risk model index
+

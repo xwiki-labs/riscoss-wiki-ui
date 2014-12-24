@@ -1,0 +1,54 @@
+{{velocity}}
+
+#if($request.method == "POST")
+  #set($riskConfiguration = $xwiki.getDocument($request.riskConfiguration))
+  
+  #set($existingRiskModels = $riskConfiguration.getObjects("RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass", "riskModel", $request.riskModel))
+  #set($found = false)
+  #foreach($existingRiskModel in $existingRiskModels)
+    #if($existingRiskModel.getProperty("layer").value == $request.layer)
+      #set($found = true)
+    #end
+  #end
+  
+  #if(!$found)
+    #set($nb = $riskConfiguration.createNewObject("RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass"))
+    #set($riskConfigurationModel = $riskConfiguration.getObject("RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass", $nb))
+    $riskConfigurationModel.set("layer", $request.layer)
+    $riskConfigurationModel.set("riskModel", $request.riskModel)
+    $riskConfiguration.save()
+  #end
+  
+  $response.sendRedirect($riskConfiguration.getURL())
+  
+#elseif($request.riskConfiguration && $request.layer)
+  {{info}}
+    Please select a risk model by clicking on the corresponding link.
+  {{/info}}
+
+
+  #set($columns = ["doc.name", "description"])
+  #set($columnsProperties = {
+      "doc.name" : { "type" : "text" , "size" : 20, "link" : "view"},
+      "description" : { "type" : "text" , "html" : "true", "filterable" : "false", "sortable" : "false"}
+  })
+  #set($options = { 
+     "className":"RISCOSSPlatformModelManagerCode.RiskModelClass",
+     "translationPrefix" : "riscossPlatform.modelManager.riskModelsTable.",
+     "tagCloud" : false,
+     "rowCount": 10
+  })
+  #livetable("riskModels" $columns $columnsProperties $options)
+
+  {{html}}
+  <form action="$xwiki.getDocument("RISCOSSPlatformRiskConfigurationManagerCode.AddRiskModel").getURL()" method="POST" id="addRiskModelForm">
+    <input type="hidden" name="riskConfiguration" value="$request.riskConfiguration"/>
+    <input type="hidden" name="layer" value="$request.layer"/>
+    <input type="hidden" name="riskModel" value="" id="riskModelInput"/>
+  </form>
+  {{/html}}
+#else 
+  {{error}}Missing parameters{{/error}}
+#end
+
+{{/velocity}}

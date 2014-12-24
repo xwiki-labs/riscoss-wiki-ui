@@ -1,0 +1,23 @@
+{{velocity output="false"}}
+#if($request.riskConfigurationName) 
+  #set($hql = "SELECT doc.fullName, doc.title 
+               FROM XWikiDocument doc, BaseObject obj
+               WHERE doc.space = 'RISCOSSPlatformRiskConfigurations' AND
+                     doc.fullName = obj.name AND
+                     upper(doc.title) LIKE upper(:riskConfigurationName) AND
+                     obj.className = 'RISCOSSPlatformRiskConfigurationManagerCode.RiskConfigurationClass'")
+  #set($query = $services.query.hql($hql))    
+  $query.bindValue("riskConfigurationName", "%$request.riskConfigurationName%")
+  
+  #set($results = $query.execute())
+#end
+{{/velocity}}
+{{velocity}}
+$response.setContentType("text/xml")
+<?xml version="1.0" encoding="UTF-8"?>
+<results>
+#foreach($result in $results)
+  <rs id="$result[0]">$result[1]</rs>
+#end
+</results>
+{{velocity}}

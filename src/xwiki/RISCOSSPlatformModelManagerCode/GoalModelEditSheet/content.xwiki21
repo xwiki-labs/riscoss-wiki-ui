@@ -1,0 +1,16 @@
+{{velocity}}
+## You can modify this page to customize the presentation of your object.
+## At first you should keep the default presentation and just save the document.
+
+#set($class = $doc.getObject('RISCOSSPlatformModelManagerCode.GoalModelClass').xWikiClass)
+#foreach($prop in $class.properties)
+  #if($prop.name != 'goalModelData')
+; $prop.prettyName
+: $doc.display($prop.getName())
+  #end
+#end
+
+; Goal model:
+: {{attachmentSelector buttontext="$services.localization.render('riscossPlatform.modelManager.uploadGoalModel')" classname="RISCOSSPlatformModelManagerCode.GoalModelClass" property="goalModelData" filter="istarml"/}}
+
+{{/velocity}}

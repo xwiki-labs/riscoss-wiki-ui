@@ -1,0 +1,19 @@
+{{velocity}}
+## You can modify this page to customize the presentation of your object.
+## At first you should keep the default presentation and just save the document.
+
+#set($class = $doc.getObject('RISCOSSPlatformRiskConfigurationManagerCode.RiskCategoryClass').xWikiClass)
+#foreach($prop in $class.properties)
+  ; $prop.prettyName
+  : $doc.display($prop.getName())
+#end
+
+----
+
+{{html wiki="true"}}
+#set($xredirect = $xwiki.getDocument("RISCOSSPlatformRiskCategories.WebHome").getURL())
+<span class="buttonwrapper">
+[[$services.localization.render("edit")>>$doc.getExternalURL("edit")]] | [[$services.localization.render("delete")>>$doc.getExternalURL("delete", "xredirect=${xredirect}")]]
+</span>
+{{/html}}
+{{/velocity}}

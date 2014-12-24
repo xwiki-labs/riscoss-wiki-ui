@@ -1,0 +1,24 @@
+{{velocity}}
+## You can modify this page to customize the presentation of your object.
+## At first you should keep the default presentation and just save the document.
+
+#set($object = $doc.getObject('RISCOSSPlatformModelManagerCode.GoalModelClass'))
+#set($class = $object.xWikiClass)
+#foreach($prop in $class.properties)  
+; $prop.prettyName
+  #if($prop.getName() == "goalModelData")
+: [[attach:$object.getProperty("goalModelData").value]]
+  #else
+: $doc.display($prop.getName())
+  #end
+#end
+
+----
+
+{{html wiki="true"}}
+#set($xredirect = $xwiki.getDocument("RISCOSSPlatformGoalModels.WebHome").getURL())
+<span class="buttonwrapper">
+[[$services.localization.render("delete")>>$doc.getExternalURL("delete", "xredirect=${xredirect}")]]
+</span>
+{{/html}}
+{{/velocity}}

@@ -1,0 +1,24 @@
+{{velocity}}
+
+#if($request.method == "POST")
+  #set($riskConfiguration = $xwiki.getDocument($request.riskConfiguration))
+  
+  #set($existingRiskModels = $riskConfiguration.getObjects("RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass", "riskModel", $request.riskModel))
+  #set($found = false)
+  #foreach($existingRiskModel in $existingRiskModels)
+    #if($existingRiskModel.getProperty("layer").value == $request.layer)
+      #set($riskModelToDelete = $existingRiskModel)
+    #end
+  #end
+  
+  #if($riskModelToDelete)
+    $riskConfiguration.removeObject($riskModelToDelete)
+    $riskConfiguration.save();
+  #end
+  
+  $response.sendRedirect($riskConfiguration.getURL())
+#else
+  {{error}}Use POST{{/error}}
+#end
+
+{{/velocity}}

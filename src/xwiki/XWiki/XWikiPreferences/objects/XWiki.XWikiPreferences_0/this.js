@@ -3,7 +3,7 @@ XWikiObj(function (obj) {
     obj.setAdmin_email("");
     obj.setAuthenticate_edit("1");
     obj.setAuthenticate_view("0");
-    obj.setColorTheme("ColorThemes.RISCOSS");
+    obj.setColorTheme("ColorThemes.RISCOSS_2");
     obj.setComment_anonymous("---");
     obj.setComment_registered("---");
     obj.setConfirmation_email_content("#set ($wikiname = $request.serverName)\n#set ($host = ${request.getRequestURL()})\n#set ($host = ${host.substring(0, ${host.indexOf('/', ${mathtool.add(${host.indexOf('//')}, 2)})})})\nSubject: Your account on ${wikiname} has been activated\n\nHello ${xwiki.getUserName(\"$xwikiname\", false)},\n\nYour account on ${wikiname} has been successfully activated. You can now login at ${host}${xwiki.getURL('XWiki.XWikiLogin', 'login')} using your username (${xwiki.getDocument($xwikiname).getName()}).");

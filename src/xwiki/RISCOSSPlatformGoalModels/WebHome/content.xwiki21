@@ -1,0 +1,14 @@
+{{velocity}}
+#set($columns = ["doc.name", "description"])
+#set($columnsProperties = {
+    "doc.name" : { "type" : "text" , "size" : 20, "link" : "view"},
+    "description" : { "type" : "text" , "html" : "true", "filterable" : "false", "sortable" : "false"}
+})
+#set($options = { 
+   "className":"RISCOSSPlatformModelManagerCode.GoalModelClass",
+   "translationPrefix" : "riscossPlatform.modelManager.goalModelsTable.",
+   "tagCloud" : false,
+   "rowCount": 10
+})
+#livetable("goalModels" $columns $columnsProperties $options)
+{{/velocity}}

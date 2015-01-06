@@ -12,7 +12,7 @@
 : $doc.display($prop.getName())
   #end
 #end
-
+#if($hasEdit)
 ----
 
 {{html wiki="true"}}
@@ -21,4 +21,5 @@
 [[$services.localization.render("delete")>>$doc.getExternalURL("delete", "xredirect=${xredirect}")]]
 </span>
 {{/html}}
+#end
 {{/velocity}}

@@ -1,0 +1,14 @@
+{{velocity}}
+#set($columns = ["doc.name", "description"])
+#set($columnsProperties = {
+    "doc.name" : { "type" : "text" , "size" : 20, "link" : "view"},
+    "description" : { "type" : "text", "html" : "true", "filterable" : "false"}
+})
+#set($options = { 
+   "className":"RISCOSSPlatformRiskConfigurationManagerCode.RiskConfigurationClass",
+   "translationPrefix" : "riscossPlatform.riskConfigurationManager.riskConfigurationsTable.",
+   "tagCloud" : false,
+   "rowCount": 10
+})
+#livetable("riskConfigurations" $columns $columnsProperties $options)
+{{/velocity}}

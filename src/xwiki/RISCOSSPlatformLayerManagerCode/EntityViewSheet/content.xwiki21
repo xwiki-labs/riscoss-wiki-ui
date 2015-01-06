@@ -54,11 +54,13 @@
 #foreach($riskAnalysisSessionDocumentName in $riskAnalysisSessionDocumentNames)  
   #set($riskAnalysisDocument = $xwiki.getDocument($services.model.resolveDocument($riskAnalysisSessionDocumentName)))
   #set($riskEvaluations = $riskAnalysisDocument.getObjects("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass"))
-| [[$riskAnalysisDocument]] | (((
-#foreach($riskEvaluation in $riskEvaluations)
-* [[$riskEvaluation.getProperty("riskConfiguration").value]]
-#end
-)))
+  | [[$riskAnalysisDocument.getTitle()>>$riskAnalysisDocument.getFullName()]] | (((
+  #foreach($riskEvaluation in $riskEvaluations)
+    * [[$riskEvaluation.getProperty("riskConfiguration").value]]
+    ##
+    #if ()
+  #end
+  )))
 #end
 
 #if ($hasEdit)

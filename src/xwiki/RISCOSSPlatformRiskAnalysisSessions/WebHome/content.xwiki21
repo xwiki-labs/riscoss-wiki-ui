@@ -1,0 +1,15 @@
+{{velocity}}
+## -*- Mode:Velocity
+#set($columns = ["doc.title", "entity"])
+#set($columnsProperties = {
+    "doc.title" : { "type" : "text" , "size" : 20, "link" : "view"},
+    "entity" : { "type" : "text", "html" : "true", "filterable" : "true"}
+})
+#set($options = { 
+   "className":"RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass",
+   "translationPrefix" : "riscossPlatform.riskAnalysisManager.riskAnalysisSessionsTable.",
+   "tagCloud" : false,
+   "rowCount": 10
+})
+#livetable("riskAnalisysSessions" $columns $columnsProperties $options)
+{{/velocity}}

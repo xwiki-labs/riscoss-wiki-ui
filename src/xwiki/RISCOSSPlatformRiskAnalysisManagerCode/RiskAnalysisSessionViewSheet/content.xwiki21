@@ -1,49 +1,48 @@
 {{velocity}}
 ## -*- Mode:Velocity
 $xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionViewSheet", {"minify":"false"})
-#set($riskAnalysisSessionObject = $doc.getObject('RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass'))
-#set($targetEntity = $xwiki.getDocument($riskAnalysisSessionObject.getProperty('entity').value))
-
-; Target entity
-: [[$targetEntity.getTitle()>>$targetEntity.getFullName()]]
-
-#set($riskEvaluations = $doc.getObjects('RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass'))
-|= Risk configuration |= Evaluation Results
-#foreach($riskEvaluation in $riskEvaluations)
-  #set($riskConfiguration = $xwiki.getDocument($riskEvaluation.getProperty('riskConfiguration').value))
-| ((($riskConfiguration.title 
-
-#if(false && $hasEdit)
-{{html clean="false"}}
-    <form action="$xwiki.getURL('RISCOSSPlatformRiskAnalysisManagerCode.Evaluate')" method="POST">
-      <input type="hidden" name="riskAnalysisSession" value="$doc.fullName"/>
-      <input type="hidden" name="riskConfiguration" value="$riskConfiguration.fullName"/>
-      <input type="hidden" name="entity" value="$targetEntity.fullName"/>
-      <input type="submit" value="Evaluate" class="button"/>
-    </form>
-{{/html}}
+#if("$!RiskAnalysisSessionViewSheet_analisysSessionDoc" != "")
+  #set($asDoc = $RiskAnalysisSessionViewSheet_analisysSessionDoc)
+#else
+  #set($asDoc = $doc)
 #end
+#set($riskAnalysisSessionObject = $asDoc.getObject('RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass'))
+#set($targetEntity = $xwiki.getDocument($riskAnalysisSessionObject.getProperty('entity').value))
+#set($riskEvaluation = $asDoc.getObject('RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass'))
+#set($riskConfiguration = $xwiki.getDocument($riskEvaluation.getProperty('riskConfiguration').value))
 
-))) | (((
-  {{html clean="false"}}
-    #if($riskEvaluation.getProperty('result').value != '')
-      <div class="resultData" style="display: none" riskConfiguration="$riskConfiguration.fullName">
-          $escapetool.url($riskEvaluation.getProperty('result').getValue())
-      </div>
-      <div class="resultInput" style="display: none">
-          $escapetool.url($riskEvaluation.getProperty('inputData').value)
-      </div>
-    #end
-  {{/html}}
-)))
+#if($riskEvaluation.getProperty('result').value == '')
+  {{info}}This risk configuration has not yet been evaluated{{/info}}
+#else
+  == KPA Risk Evaluation ==
+  (% class="resultData" style="display:none;" %)(((
+    $escapetool.url($riskEvaluation.getProperty('result').getValue())
+  )))
+
+  == Risk Evaluation Inputs ==
+  (% class="resultInput" style="display:none;" %)(((
+    $escapetool.url($riskEvaluation.getProperty('inputData').value)
+  )))
+  (% class="interpretedInput" style="display:none;" %)(((
+    $escapetool.url($riskEvaluation.getProperty('interpretedInput').value)
+  )))
 #end
 
 ----
 
 #if($hasEdit)
 #set($xredirect = $xwiki.getDocument("RISCOSSPlatformRiskConfigurations.WebHome").getURL())
-(% class="buttonwrapper" %)(((
-[[$services.localization.render("delete")>>$doc.getExternalURL("delete", "xredirect=${xredirect}")]]
-)))
+{{html clean="false"}}
+    <form action="$xwiki.getURL('RISCOSSPlatformRiskAnalysisManagerCode.Evaluate')" method="POST">
+      <input type="hidden" name="riskAnalysisSession" value="$asDoc.fullName"/>
+      <input type="hidden" name="riskConfiguration" value="$riskConfiguration.fullName"/>
+      <input type="hidden" name="entity" value="$targetEntity.fullName"/>
+      <input type="hidden" name="xredirect" value="$doc.getURL()"/>
+      <div class="buttonwrapper">
+        <a href="$asDoc.getExternalURL("delete", "xredirect=${xredirect}")">Delete Evaluation</a>
+      </div>
+      <input type="submit" value="Re-Evaluate" class="button"/>
+    </form>
+{{/html}}
 #end
 {{/velocity}}

@@ -24,7 +24,17 @@ XClass(function (xcl, XWiki) {
     "customDisplay": "",
     "editor": "---",
     "picker": "0",
-    "prettyName": "result",
+    "prettyName": "Raw Output",
+    "rows": "5",
+    "size": "40",
+    "validationMessage": "",
+    "validationRegExp": ""
+  }));
+  xcl.addProp("interpretedInput", props.TextArea.create({
+    "customDisplay": "",
+    "editor": "---",
+    "picker": "0",
+    "prettyName": "Interpreted Input",
     "rows": "5",
     "size": "40",
     "validationMessage": "",

@@ -120,19 +120,34 @@ require(['jquery'], function ($) {
     }
   };
 
-  var viewCollector = function (col, $ul) {
+  var viewCollector = function (col, $tbody) {
     if (!col.enabled) { return; }
-    var $li = appendElem($ul, 'li');
-    $li.text(col.title + ' - Running ' + col.periodicity_view);
+    var $tr = appendElem($tbody, 'tr');
+    var $td = appendElem($tr, 'td');
+    $td.text(col.title);
+
+    $td = appendElem($tr, 'td');
+    $td.text(col.periodicity_view);
+
+    var lastRun = 'Running...';
+    if (col.timeLastRun) { lastRun = new Date(Number(col.timeLastRun)).toGMTString(); }
+    $td = appendElem($tr, 'td');
+    $td.text(lastRun);
   };
 
   var view = function (config, $elem) {
-    var $dl = appendElem($elem, 'dl');
-    $dl.append('<dt><h1>'+MESSAGES.dataCollectors+'</h1></dt>');
-    var $dd = appendElem($dl, 'dd');
-    var $ul = appendElem($dd, 'ul');
+    $elem.append('<h1>'+MESSAGES.dataCollectors+'</h1>');
+    var $table = appendElem($elem, 'table');
+    var $tbody = appendElem($table, 'tbody');
+    var $headerTr = appendElem($tbody, 'tr');
+    var $th = appendElem($headerTr, 'th');
+    $th.text("Data Collector Name");
+    $th = appendElem($headerTr, 'th');
+    $th.text("Collection Frequency");
+    $th = appendElem($headerTr, 'th');
+    $th.text("Time Last Collected");
     for (var i = 0; i < config.collectors.length; i++) {
-      viewCollector(config.collectors[i], $ul);
+      viewCollector(config.collectors[i], $tbody);
     }
   };
 

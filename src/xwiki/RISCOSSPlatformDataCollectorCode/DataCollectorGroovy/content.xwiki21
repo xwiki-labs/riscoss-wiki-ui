@@ -208,12 +208,15 @@ System.out.println("xxx [" + inputs.getString("stdout") + "]");
                                                inputs,
                                                analyserAPI.getRDRPath(ctx.xwiki),
                                                entityDoc.getFullName());
-        def out = analyserAPI.evaluate(ctx.services, ctx.xwiki, sessionDoc, riskData);
+
+        def interpretedData = analyserAPI.interpret(ctx.xcontext, sessionDoc, riskData);
+        def out = analyserAPI.evaluate(ctx.services, ctx.xwiki, sessionDoc, interpretedData);
         def output = out.optJSONObject("output");
         def result = null;
         if (output != null) { result = output.optJSONObject("result"); }
         if (result == null) { ok = false; }
-        analyserAPI.storeResults(sessionDoc, result, inputs, out, System.currentTimeMillis());
+        analyserAPI.storeResults(
+            sessionDoc, result, inputs, out, interpretedData, System.currentTimeMillis());
         println(out.getJSONObject("output").getJSONObject("result"));
     }
     return ok;
@@ -249,8 +252,8 @@ private void runJob(Ctx ctx, Object entityDoc, Object collectorConf, Object sche
     }
     if (!uploadToRDR(stdout, rdrPath) == 0) {
         return;
-    } else if (!runEvals(ctx, entityDoc)) {
-        return;
+    /*} else if (!runEvals(ctx, entityDoc)) {  TODO: Make this work correctly.
+        return; */
     } else {
         rescheduleJob(ctx, entityDoc, scheduleConf);
     }

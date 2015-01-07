@@ -1,13 +1,14 @@
-require(['jquery'], function (jQuery) {
+require(['jquery'], function ($) {
 
-  // VELOCITY
-  var EVIDENCE_GAUGE = "$xwiki.getDocument('RISCOSSPlatformCode.EvidenceGauge').getExternalURL()";
-  var ADD_IMG = "$xwiki.getSkinFile('icons/silk/add.png')";
-  var NETWORK_ERR = "$services.localization.render('riscossPlatform.createForm.networkError')";
-  var EXISTS_ERR = "$services.localization.render('riscossPlatform.createForm.alreadyExistingItem')";
-  var VALUE_REQUIRED = "$services.localization.render('riscossPlatform.createForm.valueRequired')";
-  var AJAX_SPINNER = "$xwiki.getSkinFile('icons/xwiki/ajax-loader-large.gif')"
-  // END_VELOCITY
+  var EVIDENCE_GAUGE_URL = new XWiki.Document('RISCOSSPlatformCode', 'EvidenceGauge').getURL();
+  var DISTRIBUTION_COLORS = ["#298a08", "#86b404", "#ffbf00", "#fa5858", "#ff0000"];
+  var DISTRIBUTION_NAMES = [
+    "Very Low Risk",
+    "Low Risk",
+    "Medium Risk",
+    "High Risk",
+    "Very High Risk"
+  ];
   
   var createTextElement = function(value) {
     var element = document.createElement('div');
@@ -19,7 +20,7 @@ require(['jquery'], function (jQuery) {
     var div = new Element('div');
     
     var gauge = new Element('img', {
-      src: EVIDENCE_GAUGE + '?positive=' + evidence.positive + '&negative=' + evidence.negative});
+      src: EVIDENCE_GAUGE_URL + '?positive=' + evidence.positive + '&negative=' + evidence.negative});
     
     var textDiv = new Element('div');
     textDiv.setStyle({float: 'right'});
@@ -30,10 +31,28 @@ require(['jquery'], function (jQuery) {
     
     return div;
   };
+
+  var createDeterminentDistributionElement = function (dist) {
+    var i = 0;
+    for (; i < dist.length && !dist[i]; i++) ;
+    var out = document.createElement('div');
+    out.setAttribute('style', 'width:120px;height:30px;background-color:'+DISTRIBUTION_COLORS[i]);
+    out.innerHTML = '<center><p style="color:#000;font-weight:bold;padding-top:5px">'+DISTRIBUTION_NAMES[i]+'</p></center>';
+    return out;
+  };
+
+  var isDeterminentDistribution = function (dist) {
+    for (var i = 0; i < dist.length; i++) {
+      if (dist[i] === 1) { return true; }
+    }
+    return false;
+  }
   
   var createDistributionElement = function(distribution) {
+    if (isDeterminentDistribution(distribution.values)) {
+        return createDeterminentDistributionElement(distribution.values);
+    }
     var canvas = new Element('canvas', {width: 200, height: 15 * distribution.values.length});
-    var colors = ["#298a08", "#86b404", "#ffbf00", "#fa5858", "#ff0000"];
     var context = canvas.getContext("2d")
     var width = canvas.width;
     var height = canvas.height;
@@ -50,7 +69,7 @@ require(['jquery'], function (jQuery) {
     for(i = 0; i < distribution.values.length; i++) {
       context.beginPath();
       context.rect(0, i * barHeight, Math.floor(canvas.width  * distribution.values[i]), barHeight);
-      context.fillStyle = colors[i];      
+      context.fillStyle = DISTRIBUTION_COLORS[i];      
       context.fill();
       context.fillStyle = '#303030';
       context.textBaseline = "top";
@@ -64,14 +83,15 @@ require(['jquery'], function (jQuery) {
   };
     
   /* We expect data to be a map from a category to a map of results, where each
-   * result is a map of an id to a map with 3 elements (DESCRIPTION, TYPE, VALUE)
+   * result is a map of an id to a map with 3 elements (description, type, value)
    */
   var displayData = function(element, data) {
     var html = '<table>';
     for(var category in data) {
-      html = html + '<tr><th colspan="2">' + category + '</th></tr>';
-      
-      var description = data[category].DESCRIPTION || item;
+      //html = html + '<tr><th colspan="2">' + category + '</th></tr>';
+      var description = data[category].description || category;
+      // TODO: Stop requiring unused inputs!
+      if (description === 'unused') { continue; }
       html = html + '<tr><td>' + description + '</td><td><div class="result" data-category="' +
           category + '" style="display: none"></div></td></tr>';
     }
@@ -80,12 +100,12 @@ require(['jquery'], function (jQuery) {
     element.innerHTML = html;
     element.setAttribute('style', '');
     
-    var resultElements = jQuery('.result');
+    var resultElements = $('.result');
     for(var i = 0; i < resultElements.length; i++) {
       var resultElement = resultElements[i];
       var category = resultElement.getAttribute("data-category");
-      var type = data[category].TYPE;
-      var value = data[category].VALUE;
+      var type = data[category].type;
+      var value = data[category].value;
       if(type === "EVIDENCE") {
         Element.replace(resultElement, createEvidenceElement(value));
       } else if(type === "DISTRIBUTION") {
@@ -96,10 +116,52 @@ require(['jquery'], function (jQuery) {
     }
   };
 
+  // Copied from DataCollectorManager, TODO: fix
+  var uid = function () { return 'uid-' + Math.random().toString(32).substring(2); };
+  var appendElem = function ($container, type, id) {
+    id = id || uid();
+    $container.append("<"+type+" id="+id+"></"+type+">");
+    return $('#'+id);
+  };
+
+  var showInput = function ($div, interpretedInput) {
+    $div.html('');
+    $div.attr('style', '');
+    var $table = appendElem($div, 'table');
+    var $tbody = appendElem($table, 'tbody');
+
+    var $headerTr = appendElem($tbody, 'tr');
+    var $th = appendElem($headerTr, 'th');
+    $th.text("Risk Data Point");
+    $th = appendElem($headerTr, 'th');
+    $th.text("Collected Value");
+    $th = appendElem($headerTr, 'th');
+    $th.text("Interpreted Risk");
+
+    var keys = Object.keys(interpretedInput);
+    for (var i = 0; i < keys.length; i++) {
+      var $tr = appendElem($tbody, 'tr');
+      var $td = appendElem($tr, 'td');
+      $td.text(interpretedInput[keys[i]].description || keys[i]);
+
+      $td = appendElem($tr, 'td');
+      $td.append(interpretedInput[keys[i]].rawValue);
+
+      $td = appendElem($tr, 'td');
+      $td.append(createDeterminentDistributionElement(interpretedInput[keys[i]].value.values));
+    }
+  };
+
+  var getData = function (elem) {
+    return JSON.parse(decodeURIComponent(elem.text()).replace(/\+/g, ' '));
+  };
+
   var main = function () {
-    var resultDataElement = jQuery('.resultData');        
-    var resultData = JSON.parse(decodeURIComponent(resultDataElement.text()).replace(/\+/g, ' '));
-    displayData(resultDataElement[0], resultData);
+    var dat = getData($('.resultData'));
+    displayData($('.resultData')[0], dat);
+
+    var interpretedInput = getData($('.interpretedInput'));
+    showInput($('.interpretedInput'), interpretedInput.output.result);
   };
   main();
 });

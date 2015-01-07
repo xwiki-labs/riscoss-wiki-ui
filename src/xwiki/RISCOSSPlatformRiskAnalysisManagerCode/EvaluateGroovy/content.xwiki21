@@ -1,4 +1,4 @@
-/* -*- Mode: Java */
+/* -*- Mode:Java */
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.xwiki.environment.Environment;
@@ -36,10 +36,13 @@ public String getRemoteAnalyzerPath(Object services)
 private JSONObject runEvaluator(Object services, String cmd, String riskModels, JSONObject inputs)
 {
     def rap = getRemoteAnalyzerPath(services);
-    JSONObject out = new JSONObject(
-        services.commandRunner.run("java -jar -Xmx2048m " + rap + " " + cmd + " " +
-                                   riskModels + " -", inputs.toString(), 120000)
-    );
+    String command = "java -jar -Xmx2048m " + rap + " " + cmd + " " + riskModels + " -";
+    String workDir = System.getProperty("user.dir");
+    JSONObject out =
+        new JSONObject(services.commandRunner.run(command, inputs.toString(), 120000, workDir));
+    out.put("command", command);
+    out.put("workDir", workDir);
+
     String stdout = out.getString("stdout");
     String BEGIN = "-----BEGIN ANALYSIS OUTPUT-----";
     String END = "-----END ANALYSIS OUTPUT-----";
@@ -73,12 +76,14 @@ public JSONObject runInterpreter(Object services,
     if (interpreterDoc.isNew()) { return null; }
     def interpreterObj = interpreterDoc.getObject(INTERPRETER_CLS);
 
-    def command = interpreterObj.getProperty("command").getValue();
+    def command = interpreterObj.getProperty("command").getValue() + " " + cmd + " -";
     File workDir = getAttachDir(services, xcontext, interpreterDoc);
 
     JSONObject out = new JSONObject(
-        services.commandRunner.run(command + " " + cmd + " -", inputs.toString(), 120000, ""+workDir)
+        services.commandRunner.run(command, inputs.toString(), 120000, ""+workDir)
     );
+    out.put("command", command);
+    out.put("workDir", ""+workDir);
 
     String stdout = out.getString("stdout");
     String BEGIN = "-----BEGIN ANALYSIS OUTPUT-----";
@@ -107,7 +112,7 @@ private Object getXWiki(Object xcontext)
     return vcontext.get("xwiki");
 }
 
-public JSONObject evaluate(Object xcontext, Object sessionDoc, JSONObject riskData)
+public JSONObject interpret(Object xcontext, Object sessionDoc, JSONObject riskData)
 {
     JSONObject inputs = runInterpreter(getServices(xcontext),
                                        xcontext,
@@ -115,11 +120,18 @@ public JSONObject evaluate(Object xcontext, Object sessionDoc, JSONObject riskDa
                                        "evaluate",
                                        sessionDoc,
                                        riskData);
-    if (inputs != null) {
-        riskData = inputs.getJSONObject("output");
+    if (inputs == null) {
+        inputs = new JSONObject();
+        inputs.put("output", riskData);
     }
+    return inputs;
+}
+
+public JSONObject evaluate(Object xcontext, Object sessionDoc, JSONObject interpretedRiskData)
+{
+    JSONObject output = interpretedRiskData.getJSONObject("output")
     String riskModels = riskModelsForSession(xcontext, sessionDoc);
-    return runEvaluator(getServices(xcontext), "evaluate", riskModels, riskData);
+    return runEvaluator(getServices(xcontext), "evaluate", riskModels, output);
 }
 
 public JSONObject getInputs(Object xcontext, Object sessionDoc)
@@ -294,6 +306,7 @@ public void storeResults(Object sessionDoc,
                          JSONObject results,
                          JSONObject inputs,
                          JSONObject raw,
+                         JSONObject interpreted,
                          long now)
 {
     if (now < 1) {
@@ -303,6 +316,7 @@ public void storeResults(Object sessionDoc,
     riskEvalObj.set("inputData", inputs ? inputs.toString() : "");
     riskEvalObj.set("result", results ? results.toString() : "");
     riskEvalObj.set("rawOutput", raw ? raw.toString() : "");
+    riskEvalObj.set("interpretedInput", interpreted ? interpreted.toString() : "");
     riskEvalObj.set("timeLastRun", now);
     sessionDoc.saveWithProgrammingRights("Saved results to risk analysis session");
 }

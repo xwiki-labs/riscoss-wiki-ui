@@ -57,10 +57,13 @@
   | [[$riskAnalysisDocument.getTitle()>>$riskAnalysisDocument.getFullName()]] | (((
   #foreach($riskEvaluation in $riskEvaluations)
     * [[$riskEvaluation.getProperty("riskConfiguration").value]]
-    ##
-    #if ()
   #end
   )))
+  #if($riskAnalysisSessionDocumentNames.size() == 1)
+
+      #set($RiskAnalysisSessionViewSheet_analisysSessionDoc = $riskAnalysisDocument)
+      {{include reference="RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionViewSheet" /}}
+  #end
 #end
 
 #if ($hasEdit)

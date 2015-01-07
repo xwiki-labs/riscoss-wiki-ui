@@ -9,15 +9,21 @@ $xwiki.jsx.use('RISCOSSPlatformDataCollectorCode.DataCollectorManager', {"minify
 ## The final output
 #set ($outConf = {})
 
+#if ("$!request.getParameter('entityDoc')" != "")
+  #set($entityDoc = $xwiki.getDocument($request.getParameter('entityDoc')))
+#else
+  #set($entityDoc = $doc)
+#end
+
 ## URL for removing objects, used by the jsx
 #set ($removeDC = 'RISCOSSPlatformDataCollectorCode.RemoveDataCollector')
-$outConf.put("objRemoveURL", $xwiki.getURL($removeDC, 'get', "docName=$doc.getFullName()"))
+$outConf.put("objRemoveURL", $xwiki.getURL($removeDC, 'get', "docName=$entityDoc.getFullName()"))
 
 ## List of data collectors
 #set ($collectors = [])
 $outConf.put("collectors", $collectors)
 
-#set ($schedulesList = $doc.getObjects("RISCOSSPlatformDataCollectorCode.DataCollectorScheduler"))
+#set ($schedulesList = $entityDoc.getObjects("RISCOSSPlatformDataCollectorCode.DataCollectorScheduler"))
 #set ($schedulesMap = {})
 #foreach ($s in $schedulesList)
   #if ("$!s.getProperty('collectorName')" != "")
@@ -32,7 +38,7 @@ $outConf.put("collectors", $collectors)
   #set ($collectorOut = {})
   $collectors.add($collectorOut)
   #set ($col = $xwiki.getDocument($collectorName))
-  #set ($cobj = $doc.getObject($collectorName))
+  #set ($cobj = $entityDoc.getObject($collectorName))
 
   $collectorOut.put("title", $col.getTitle())
   $collectorOut.put("fullName", $col.getFullName())
@@ -40,12 +46,13 @@ $outConf.put("collectors", $collectors)
   #set($schedule = $schedulesMap.get($col.getFullName()))
   #if ("$!schedule" == "")
     ## We're not going to save this object at the moment, just make it ready to save later...
-    #set($schedule = $doc.newObject("RISCOSSPlatformDataCollectorCode.DataCollectorScheduler"))
+    #set($schedule = $entityDoc.newObject("RISCOSSPlatformDataCollectorCode.DataCollectorScheduler"))
   #else
     $collectorOut.put('enabled', 'true')
   #end
   $collectorOut.put("periodicity_edit", "$!schedule.display('periodicity', 'edit')")
   $collectorOut.put("periodicity_view", "$!schedule.getProperty('periodicity').getValue()")
+  $collectorOut.put("timeLastRun", "$!schedule.getProperty('timeLastRun').getValue()")
 
   #set($props = [])
   $collectorOut.put("properties", $props)

@@ -28,8 +28,9 @@
 #else
   #set($sessionDoc = $xwiki.getDocument($riskAnalysisSession))
   #if($sessionDoc.isNew())
-    #set($ok = false)
     {{error}}Parameter "riskAnalysisSession" points to nonexistant document{{/error}}
+  #else
+    #set($ok = true)
   #end
 #end
 ##
@@ -76,7 +77,40 @@
 #end
 ##
 #if($ok == true)
-  #set($outRaw = $analyserAPI.evaluate($xcontext, $sessionDoc, $riskData))
+  #set($interpretedRiskData = $analyserAPI.interpret($xcontext, $sessionDoc, $riskData))
+  #set($output = "")
+  #set($output = $interpretedRiskData.optJSONObject("output"))
+  #if("$!output" == "")
+    #set($ok = false)
+    {{error}}
+      Failed to interpret risk data
+      COMMAND: $interpretedRiskData.getString("command")
+
+      RETCODE: $interpretedRiskData.getString("ret")
+      STDOUT:
+
+      {{code language=none}}
+        $interpretedRiskData.getString("stdout")
+      {{/code}}
+
+      STDERR:
+
+      {{code language=none}}
+        $interpretedRiskData.getString("stderr")
+      {{/code}}
+
+      INPUT:
+
+      {{code language=none}}
+        $riskData.toString(2)
+      {{/code}}
+
+    {{/error}}
+  #end
+#end
+##
+#if($ok == true)
+  #set($outRaw = $analyserAPI.evaluate($xcontext, $sessionDoc, $interpretedRiskData))
   #set($output = $outRaw.optJSONObject("output"))
   #set($result = "")
   #if($output)
@@ -86,6 +120,8 @@
     #set($ok = false)
     {{error}}
       Failed to run evaluation
+      COMMAND: $outRaw.getString("command")
+
       RETCODE: $outRaw.getString("ret")
       STDOUT:
 
@@ -99,12 +135,22 @@
         $outRaw.getString("stderr")
       {{/code}}
 
+      INPUT:
+
+      {{code language=none}}
+        $interpretedRiskData.toString(2)
+      {{/code}}
+
     {{/error}}
   #end
 #end
 ##
 #if($ok == true)
-  $analyserAPI.storeResults($sessionDoc, $result, $riskData, $outRaw, 0)##
-  $response.sendRedirect($sessionDoc.getURL())
+  $analyserAPI.storeResults($sessionDoc, $result, $riskData, $outRaw, $interpretedRiskData, 0)##
+  #if ("$!request.getProperty('xredirect')" != "")
+    $response.sendRedirect($request.getProperty('xredirect'))
+  #else
+    $response.sendRedirect($sessionDoc.getURL())
+  #end
 #end
 {{/velocity}}

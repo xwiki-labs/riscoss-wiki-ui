@@ -14,7 +14,7 @@ $xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionViewSh
 #if($riskEvaluation.getProperty('result').value == '')
   {{info}}This risk configuration has not yet been evaluated{{/info}}
 #else
-  == KPA Risk Evaluation ==
+  == Risk Evaluation ==
   (% class="resultData" style="display:none;" %)(((
     $escapetool.url($riskEvaluation.getProperty('result').getValue())
   )))

@@ -1,0 +1,8 @@
+riscossPlatform.title=RISCOSS Platform
+riscossPlatform.domain=Domain
+riscossPlatform.domainManager=Domain Manager
+riscossPlatform.createForm.valueRequired=Value required
+riscossPlatform.createForm.alreadyExistingItem=An item with this name already exists. Choose another name
+riscossPlatform.adminUsers=Administer users
+riscossPlatform.adminUsers.title=User administration
+riscossPlatform.adminRoles=Administer roles

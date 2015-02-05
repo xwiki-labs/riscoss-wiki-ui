@@ -1,0 +1,14 @@
+{{velocity output="false"}}
+#macro(generateCreateLink $params)
+  [[${params.get('linkLabel')}>>RISCOSSPlatformCode.Create||queryString="space=${params.get('space')}&template=${params.get('template')}&formTitle=${params.get('formTitle')}&fieldLabel=${params.get('fieldLabel')}" #if($params.get('linkClass')) class="${params.get('linkClass')}" #end]]
+#end
+
+#macro(generateCreateDialogLink $params)
+  [[${params.get('linkLabel')}>>RISCOSSPlatformCode.Create||queryString="xpage=plain&space=${params.get('space')}&template=${params.get('template')}&fieldLabel=${params.get('fieldLabel')}" class="openDialog" title="${params.get('dialogTitle')}" callback="XWiki.RISCOSSPlatform.initializeCreateDialog"]]
+#end
+
+#macro(generateCustomCreateDialogLink $params)
+  [[${params.get('linkLabel')}>>RISCOSSPlatformCode.CustomCreate||queryString="xpage=plain&action=${params.get('action')}&space=${params.get('space')}&fieldLabel=${params.get('fieldLabel')}" class="openDialog" title="${params.get('dialogTitle')}" callback="XWiki.RISCOSSPlatform.initializeCreateDialog"]]
+#end
+
+{{/velocity}}

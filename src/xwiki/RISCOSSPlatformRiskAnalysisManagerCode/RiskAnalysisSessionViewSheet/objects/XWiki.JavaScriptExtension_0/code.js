@@ -140,6 +140,9 @@ require(['jquery'], function ($) {
 
     var keys = Object.keys(interpretedInput);
     for (var i = 0; i < keys.length; i++) {
+      // hax
+      if (interpretedInput[keys[i]].description === 'unused') { continue; }
+
       var $tr = appendElem($tbody, 'tr');
       var $td = appendElem($tr, 'td');
       $td.text(interpretedInput[keys[i]].description || keys[i]);

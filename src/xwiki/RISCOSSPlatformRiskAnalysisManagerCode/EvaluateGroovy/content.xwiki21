@@ -9,6 +9,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.commons.codec.net.URLCodec;
 
 public class EvaluateAPI {
 
@@ -161,6 +162,8 @@ public JSONObject getRiskData(Object services,
     def inputOutput = inputs.getJSONObject("output");
     def inputResult = inputOutput.getJSONObject("result");
 
+    targetName = targetName.toLowerCase();
+
     try {
         CloseableHttpClient client = HttpClientBuilder.create().build();
         for (String name : JSONObject.getNames(inputResult)) {
@@ -211,8 +214,10 @@ public File getAttachFile(Object services, Object xcontext, Object attachment)
 {
     Object env = services.component.getInstance(Environment.class);
     File tempDir = env.getTemporaryDirectory();
-    File dir = new File(tempDir, "riscoss-" + attachment.getDocument().getFullName());
-    File file = new File(dir, attachment.getFilename());
+    String encodedDocName = (new URLCodec()).encode(attachment.getDocument().getFullName());
+    File dir = new File(tempDir, "riscoss-" + encodedDocName);
+    String encodedFileName = (new URLCodec()).encode(attachment.getFilename());
+    File file = new File(dir, encodedFileName);
     if (!dir.isDirectory()) {
         if (!dir.mkdir()) { throw new RuntimeException("failed to make directory"); }
     }

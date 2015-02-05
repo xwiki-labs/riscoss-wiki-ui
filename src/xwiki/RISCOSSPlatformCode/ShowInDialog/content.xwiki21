@@ -1,0 +1,16 @@
+This page contains a JSX that allows to show the target of a link as the content of a dialog.
+
+Just add the ##openDialog## class to the ##a## element and the link target will be open in the dialog.
+
+Additional attributes that can be specified:
+
+* ##title## for the dialog title
+* ##callback## the name of a function (not a function definition!) that will be called once the dialog is displayed and its content fully loaded. This function will be passed a reference to the dialog itself.
+
+== Example
+
+{{code language="html"}}
+  [[Show this page in a dialog!>>ShowInDialog||queryString="xpage=plain" class="openDialog" title="Show in dialog" callback="alert"]]
+{{/code}}
+
+[[Show this page in a dialog!>>ShowInDialog||queryString="xpage=plain" class="openDialog" title="Show in dialog" callback="alert"]]

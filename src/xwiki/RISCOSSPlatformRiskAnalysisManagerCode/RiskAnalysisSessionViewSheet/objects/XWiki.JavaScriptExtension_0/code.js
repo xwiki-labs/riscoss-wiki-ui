@@ -1,6 +1,6 @@
 require(['jquery'], function ($) {
 
-  var EVIDENCE_GAUGE_URL = new XWiki.Document('RISCOSSPlatformCode', 'EvidenceGauge').getURL();
+  var EVIDENCE_GAUGE_URL = new XWiki.Document('EvidenceGauge', 'RISCOSSPlatformCode').getURL('get');
   var DISTRIBUTION_COLORS = ["#298a08", "#86b404", "#ffbf00", "#fa5858", "#ff0000"];
   var DISTRIBUTION_NAMES = [
     "Very Low Risk",

@@ -16,6 +16,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.xwiki.environment.Environment;
+import org.apache.commons.codec.net.URLCodec;
 
 public class Ctx {
 
@@ -125,8 +126,10 @@ public File getAttachFile(Object services, Object xcontext, Object attachment)
 {
     Object env = services.component.getInstance(Environment.class);
     File tempDir = env.getTemporaryDirectory();
-    File dir = new File(tempDir, "riscoss-" + attachment.getDocument().getFullName());
-    File file = new File(dir, attachment.getFilename());
+    String encodedDocName = (new URLCodec()).encode(attachment.getDocument().getFullName());
+    File dir = new File(tempDir, "riscoss-" + encodedDocName);
+    String encodedFileName = (new URLCodec()).encode(attachment.getFilename());
+    File file = new File(dir, encodedFileName);
     if (!dir.isDirectory()) {
         if (!dir.mkdir()) { throw new RuntimeException("failed to make directory"); }
     }

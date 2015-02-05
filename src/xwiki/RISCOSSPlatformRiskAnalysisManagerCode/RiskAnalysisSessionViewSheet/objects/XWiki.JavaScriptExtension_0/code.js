@@ -1,13 +1,14 @@
 require(['jquery'], function ($) {
 
   var EVIDENCE_GAUGE_URL = new XWiki.Document('EvidenceGauge', 'RISCOSSPlatformCode').getURL('get');
-  var DISTRIBUTION_COLORS = ["#298a08", "#86b404", "#ffbf00", "#fa5858", "#ff0000"];
+  var DISTRIBUTION_COLORS = ["#298a08", "#86b404", "#ffbf00", "#fa5858", "#ff0000", "#cccccc"];
   var DISTRIBUTION_NAMES = [
     "Very Low Risk",
     "Low Risk",
     "Medium Risk",
     "High Risk",
-    "Very High Risk"
+    "Very High Risk",
+    "Unknown"
   ];
   
   var createTextElement = function(value) {
@@ -33,25 +34,17 @@ require(['jquery'], function ($) {
   };
 
   var createDeterminentDistributionElement = function (dist) {
-    var i = 0;
-    for (; i < dist.length && !dist[i]; i++) ;
+    var i = 5;
+    if (dist) {
+        for (i = 0; i < dist.length && (dist[i] < 0.9); i++) ;
+    }
     var out = document.createElement('div');
     out.setAttribute('style', 'width:120px;height:30px;background-color:'+DISTRIBUTION_COLORS[i]);
     out.innerHTML = '<center><p style="color:#000;font-weight:bold;padding-top:5px">'+DISTRIBUTION_NAMES[i]+'</p></center>';
     return out;
   };
 
-  var isDeterminentDistribution = function (dist) {
-    for (var i = 0; i < dist.length; i++) {
-      if (dist[i] === 1) { return true; }
-    }
-    return false;
-  }
-  
   var createDistributionElement = function(distribution) {
-    if (isDeterminentDistribution(distribution.values)) {
-        return createDeterminentDistributionElement(distribution.values);
-    }
     var canvas = new Element('canvas', {width: 200, height: 15 * distribution.values.length});
     var context = canvas.getContext("2d")
     var width = canvas.width;
@@ -140,15 +133,22 @@ require(['jquery'], function ($) {
 
     var keys = Object.keys(interpretedInput);
     for (var i = 0; i < keys.length; i++) {
+      var entry = interpretedInput[keys[i]];
       // hax
-      if (interpretedInput[keys[i]].description === 'unused') { continue; }
+      if (entry.description === 'unused') { continue; }
 
       var $tr = appendElem($tbody, 'tr');
       var $td = appendElem($tr, 'td');
-      $td.text(interpretedInput[keys[i]].description || keys[i]);
+      $td.text(entry.description || keys[i]);
 
       $td = appendElem($tr, 'td');
-      $td.append(interpretedInput[keys[i]].rawValue);
+      if (entry.rawValue) {
+          $td.append(entry.rawValue);
+      } else if (["NUMBER","INTEGER","REAL"].indexOf(entry.type)) {
+          $td.append(entry.value);
+      } else {
+          $td.append(-1);
+      }
 
       $td = appendElem($tr, 'td');
       $td.append(createDeterminentDistributionElement(interpretedInput[keys[i]].value.values));

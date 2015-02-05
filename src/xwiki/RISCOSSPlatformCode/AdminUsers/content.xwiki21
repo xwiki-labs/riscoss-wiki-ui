@@ -1,0 +1,96 @@
+{{velocity}}
+## -*- Mode:Velocity
+## The Users management is enabled:
+## - on the main wiki
+## - on a subwiki where local users are enabled
+## - on a subwiki if there is no service "$services.wiki.user"
+#if($xcontext.isMainWiki() || "$!services.wiki.user" == '' || "$!services.wiki.user.userScope" != 'GLOBAL_ONLY')
+  ### Globally administrate the users in a wiki.
+  #set($formname = "update")
+  #set($saveaction = "save")
+  ##
+  ## inject needed JS and CSS files
+  ##
+  #set($ok = $xwiki.jsfx.use("js/xwiki/lightbox/lightbox.js", true))
+  #set($ok = $xwiki.ssfx.use("js/xwiki/lightbox/lightbox.css", true))
+  #set($ok = $xwiki.jsfx.use("js/xwiki/usersandgroups/usersandgroups.js", true))
+  #set($ok = $xwiki.ssfx.use("js/xwiki/usersandgroups/usersandgroups.css", true))
+  #set($ok = $xwiki.jsfx.use("js/xwiki/table/livetable.js", true))
+  #set($ok = $xwiki.ssfx.use("js/xwiki/table/livetable.css", true))
+  #set($ok = $xwiki.ssx.use("XWiki.XWikiUserSheet"))
+  #set($ok = $xwiki.jsx.use("XWiki.XWikiUserSheet"))
+  ##
+  ## url to get the users for displaying them in the ajax-based table
+  ##
+  #set($url = $doc.getURL('get', 'xpage=getusers'))
+  #if($xcontext.database != "xwiki")
+    #set($mainwk = false)
+  #else
+    #set($mainwk = true)
+  #end
+  {{html}}
+  <div id="xwikieditcontent">    
+    <table id="userstable" class="xwiki-livetable">
+      <tr>
+        <td class="xwiki-livetable-pagination" colspan="2">
+          <span id="userstable-limits" class="xwiki-livetable-limits"></span>
+          <span id="userstable-ajax-loader" class="xwiki-livetable-loader"><img src="$xwiki.getSkinFile('icons/xwiki/ajax-loader-large.gif')" alt="$services.localization.render('platform.livetable.loading')" title="" />$services.localization.render('platform.livetable.loading')</span>
+          <span class="pagination">
+            <span id="userstable-pagination-text" class="xwiki-livetable-pagination-text">$services.localization.render('platform.livetable.paginationPage')</span>
+            <span id="userstable-pagination" class="xwiki-livetable-pagination-content" ></span>
+          </span>
+        </td>
+      </tr>
+      <tr>
+        <td class="xwiki-livetable-display-container">
+          <table class="xwiki-livetable-display">
+            <thead class="xwiki-livetable-display-header">
+              <tr>
+                <th class="xwiki-livetable-display-header-text" scope="col">$services.localization.render('xe.admin.users.username')</th>
+                <th class="xwiki-livetable-display-header-text" scope="col">$services.localization.render('xe.admin.users.firstname')</th>
+                <th class="xwiki-livetable-display-header-text" scope="col">$services.localization.render('xe.admin.users.lastname')</th>                
+              </tr>
+              <tr id="userstable-filters" class="xwiki-livetable-display-filters">
+                <td class="xwiki-livetable-display-header-filter"><label for="name" class="hidden">$services.localization.render('xe.admin.users.filter.username')</label><input id="name" name="name" type="text" class="filter"/></td>
+                <td class="xwiki-livetable-display-header-filter"><label for="first_name" class="hidden">$services.localization.render('xe.admin.users.filter.username')</label><input id="first_name" name="first_name" type="text" class="filter"/></td>
+                <td class="xwiki-livetable-display-header-filter"><label for="last_name" class="hidden">$services.localization.render('xe.admin.users.filter.username')</label><input id="last_name" name="last_name" type="text" class="filter"/></td>
+                <td class="xwiki-livetable-display-header-filter">                  
+                    <input name="wiki" type="hidden" value="local" />                  
+                </td>
+              </tr>
+            </thead>
+            <tbody id="userstable-display" class="xwiki-livetable-display-body">
+              <tr>
+                <td colspan="4">&nbsp;</td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+      <tr><td colspan="3" id="tdAddNewUserOrGroup">
+        <span class="buttonwrapper"><a href="#" id="addNewUser" class="addNewUserOrGroup">$services.localization.render('rightsmanager.addnewuser')</a></span>
+      </td></tr>
+    </table>
+    <script type="text/javascript">
+      // <![CDATA[
+      (function() {
+        var startup = function() {
+          var callback = function(row, i, table) { return displayUsers(row, i, table, "$!{services.csrf.getToken()}"); };
+          var ta = new XWiki.widgets.LiveTable("$url", "userstable", callback);
+          #set($registerurl = $doc.getURL('view', 'xpage=registerinline'))
+          #set($saveurl = $doc.getURL('register', 'xpage=registerinline'))
+          #set($redirectuserurl = $xwiki.getDocument('XWiki.XWikiPreferences').getURL('admin', "editor=${editor}&section=Users"))
+          Event.observe($('addNewUser'), "click", makeAddHandler("$registerurl", "$saveurl", "$redirectuserurl"));
+        }
+        if ((typeof(XWiki) != 'undefined') && (typeof(XWiki.widgets) != 'undefined') && (typeof(XWiki.widgets.LiveTable) != 'undefined')) {
+          startup();
+        } else {
+          document.observe('xwiki:livetable:loading', startup);
+        }
+      })();
+      // ]]>
+    </script>
+  </div> ## end of xwikieditcontent
+  {{/html}}
+#end
+{{/velocity}}

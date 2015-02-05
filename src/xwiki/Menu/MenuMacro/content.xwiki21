@@ -1,0 +1,29 @@
+{{toc/}}
+
+= Horizontal Menu =
+
+{{velocity}}
+{{code language="none"}}
+{{menu type="horizontal fixedWidth"}}
+$xwiki.getDocument('MenuTemplate').content
+{{/menu}}
+{{/code}}
+{{/velocity}}
+
+{{menu type="horizontal fixedWidth"}}
+{{include reference="MenuTemplate" /}}
+{{/menu}}
+
+= Vertical Menu =
+
+{{velocity}}
+{{code language="none"}}
+{{menu type="vertical"}}
+...
+{{/menu}}
+{{/code}}
+{{/velocity}}
+
+{{menu type="vertical"}}
+{{include reference="MenuTemplate" /}}
+{{/menu}}

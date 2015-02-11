@@ -1,0 +1,14 @@
+{{velocity output="false"}}
+#macro(afterRegistration, $xwikiname)
+  #set($userDoc = $xwiki.getDocument("XWiki.${xwikiname}"))
+  #set($group = $xwiki.getDocument('RISCOSSPlatformGroups.Producers'))
+  #set($gObj = $group.newObject('XWiki.XWikiGroups'))
+  #set($discard = $gObj.set('member', $userDoc.getFullName()))
+  $group.saveWithProgrammingRights("Added user")
+#end
+#set($doAfterRegistration = "#afterRegistration($request.get('xwikiname'))")
+{{/velocity}}
+
+Welcome to RISCOSS Platform, Register here and you will be able to submit projects for risk analysis.
+
+{{include reference="XWiki.Registration" /}}

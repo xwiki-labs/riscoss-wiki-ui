@@ -1,7 +1,7 @@
+{{velocity}}#* -*- Mode:Velocity *#{{/velocity}}
 {{include document="RISCOSSPlatformCode.Macros"/}}
 
 {{velocity}}
-## -*- Mode:Velocity
 #set($columns = ['entity'])
 #set($columnsProperties = {
     'entity' : { 'type' : 'text', 'link' : 'field', 'sortable' : 'true', 'filterable' : 'true'}
@@ -19,7 +19,6 @@
 ## TODO(cjd): translate
 #set($projName = "Name of new open source project")
 ##
-##{{html clean="false"}}<span class="buttonwrapper">{{/html}}
 (% class="buttonwrapper" %)(((
 #generateCreateDialogLink({
      "space": "RISCOSSPlatformEntities",
@@ -29,5 +28,7 @@
      "fieldLabel": $projName
    })
 )))
-##{{html clean="false"}}</span>{{/html}}
+##
 {{/velocity}}
+
+{{include reference="RISCOSSPlatformCode.CreateFromGitHub" /}}

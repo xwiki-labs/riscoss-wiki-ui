@@ -1,0 +1,45 @@
+{{velocity}}
+## -*- Mode:Velocity
+#set ($githubRepo = $request.getParameter('githubRepo'))
+#set($API = $xwiki.parseGroovyFromPage("RISCOSSPlatformCode.CreateFromGithubGroovy"))
+#if ("$!githubRepo" != "")
+  #if (!$API.isOkGithubURL($githubRepo))
+    {{error}}Invalid GitHub project URL, please make sure it is in the same form as https://github.com/xwiki-labs/cryptpad.git{{/error}}
+  #else
+    #set($entityDoc = $xwiki.getDocument($API.docNameForGithubURL($githubRepo)))
+    #if (!$entityDoc.isNew())
+      {{error}}Project for [$githubRepo] already exists: [[$entityDoc.getTitle()>>$entityDoc]]{{/error}}
+    #else
+      #set($cancelRedirect = $xwiki.getURL("Main.WebHome"))
+      #set($title = $escapetool.url($API.titleForGithubURL($githubRepo)))
+      #set($qs = "template=RISCOSSPlatformLayers.OSSComponentTemplate")
+      #set($qs = "$qs&parent=$entityDoc.getSpace().WebHome")
+      #set($qs = "$qs&title=$title")
+      #set($qs = "$qs&cancelredirect=${cancelRedirect}") 
+      #set($qs = "$qs&RISCOSSPlatformLayers.OSSComponent_0_website=$escapetool.url($githubRepo)")
+      #set($qs = "$qs&RISCOSSPlatformLayers.OSSComponent_0_name=$title")
+      $response.sendRedirect($entityDoc.getURL("edit", $qs))
+    #end
+  #end
+#else
+== Create Project from Github ==
+{{html clean="false"}}
+<form action="$xwiki.getURL('RISCOSSPlatformCode.CreateFromGithub')" method="POST" class="xform third createForm">
+    <dl>
+      <dt>
+        <label for="githubRepo">
+          GitHub Repository
+        </label>
+      </dt>
+      <dt>
+        <input type="text" name="githubRepo" id="githubRepo" />
+      </dt>
+    </dl>
+    <br/>
+    <span class="buttonwrapper">
+      <input type="submit" class="button" name="submit" value="Create" />
+    </span>
+</form>
+{{/html}}
+#end
+{{/velocity}}

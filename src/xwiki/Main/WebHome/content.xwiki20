@@ -3,7 +3,7 @@
 {{/html}}
 
 {{velocity}}
-#if ($xwiki.getUser().isUserInGroup("XWiki.XWikiAdminGroup"))
+#if ($hasAdmin)
 {{include reference="RISCOSSPlatformCode.AdminPage" /}}
 #elseif ($xwiki.getUser().isUserInGroup("RISCOSSPlatformGroups.Producers"))
 {{include reference="RISCOSSPlatformCode.ProducerPage" /}}

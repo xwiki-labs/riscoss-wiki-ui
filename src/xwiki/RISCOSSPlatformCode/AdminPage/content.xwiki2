@@ -14,5 +14,3 @@
 })
 #livetable('entities', $columns, $columnsProperties, $options)
 {{/velocity}}
-
-{{include reference="RISCOSSPlatformCode.CreateFromGithub" /}}

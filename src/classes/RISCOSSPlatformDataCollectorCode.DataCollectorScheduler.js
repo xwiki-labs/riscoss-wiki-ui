@@ -1,9 +1,9 @@
 XClass(function (xcl, XWiki) {
   var props = XWiki.model.properties;
-  xcl.addProp("periodicity", props.StaticList.create({
+  xcl.addProp("frequency", props.StaticList.create({
     "customDisplay": "",
     "picker": "0",
-    "prettyName": "periodicity",
+    "prettyName": "frequency",
     "sort": "none",
     "validationMessage": "",
     "validationRegExp": "",

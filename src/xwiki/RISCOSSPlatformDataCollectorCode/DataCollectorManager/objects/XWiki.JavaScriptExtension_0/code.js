@@ -5,7 +5,7 @@ require(['jquery'], function ($) {
     deletingObject: 'Deleting Object',
     doneDeletingObject: 'Done',
     errorDeletingObject: 'Error',
-    periodicity: 'Frequency'
+    frequency: 'Frequency'
   };
 
   var uid = function () { return 'uid-' + Math.random().toString(32).substring(2); };
@@ -68,13 +68,13 @@ require(['jquery'], function ($) {
       $input.attr('value', prop.value || '');
     }
 
-    var $input = makeLabeledElement($list, MESSAGES.periodicity, 'input');
-    var freqEdit = col.periodicity_edit.replace(/^{{[^}]+}}/, '').replace(/{{[^}]+}}$/, '');
+    var $input = makeLabeledElement($list, MESSAGES.frequency, 'input');
+    var freqEdit = col.frequency_edit.replace(/^{{[^}]+}}/, '').replace(/{{[^}]+}}$/, '');
     var $freqDD = $($input[0].parentNode);
     var inputId = $input.attr('id');
     $input.remove();
     $freqDD.append(freqEdit);
-    var name = $freqDD.find('select').attr('name').replace(/_periodicity$/, '_collectorName');
+    var name = $freqDD.find('select').attr('name').replace(/_frequency$/, '_collectorName');
     $freqDD.append('<input type="hidden" name="' + name + '" value="' + col.fullName + '">');
     $freqDD.find('select').attr('id', inputId).attr('class', 'post-input');
     $freqDD.find('input').attr('class', 'post-input');
@@ -127,7 +127,7 @@ require(['jquery'], function ($) {
     $td.text(col.title);
 
     $td = appendElem($tr, 'td');
-    $td.text(col.periodicity_view);
+    $td.text(col.frequency_view);
 
     var lastRun = 'Running...';
     if (col.timeLastRun) { lastRun = new Date(Number(col.timeLastRun)).toGMTString(); }

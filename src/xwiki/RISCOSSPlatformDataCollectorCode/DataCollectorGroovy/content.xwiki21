@@ -272,10 +272,10 @@ private void runSchedule(Ctx ctx, Object doc, Object scheduleConf) {
     if (timeLastRun == null) { timeLastRun = 0; }
     String name = getValue(scheduleConf, "collectorName");
     String fullName = doc.getFullName() + "/" + name;
-    Long milliseconds = ctx.millisecondsByPeriod.get(getValue(scheduleConf, "periodicity"));
+    Long milliseconds = ctx.millisecondsByPeriod.get(getValue(scheduleConf, "frequency"));
     if (milliseconds == null) {
-        System.out.println("warning: [" + fullName + "] invalid periodicity [" +
-            getValue(scheduleConf, "periodicity") + "]");
+        System.out.println("warning: [" + fullName + "] invalid frequency [" +
+            getValue(scheduleConf, "frequency") + "]");
         return;
     }
     if (System.currentTimeMillis() - timeLastRun > milliseconds) {

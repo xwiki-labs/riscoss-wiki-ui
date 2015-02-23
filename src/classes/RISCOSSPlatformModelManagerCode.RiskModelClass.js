@@ -18,4 +18,12 @@ XClass(function (xcl, XWiki) {
     "validationMessage": "",
     "validationRegExp": ""
   }));
+  xcl.addProp("evaluator", props.XString.create({
+    "customDisplay": "",
+    "picker": "0",
+    "prettyName": "Evaluation engine",
+    "size": "30",
+    "validationMessage": "",
+    "validationRegExp": ""
+  }));
 });

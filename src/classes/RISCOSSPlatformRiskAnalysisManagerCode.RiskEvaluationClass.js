@@ -52,4 +52,12 @@ XClass(function (xcl, XWiki) {
     "validationMessage": "",
     "validationRegExp": ""
   }));
+  xcl.addProp("entity", props.XString.create({
+    "customDisplay": "",
+    "picker": "0",
+    "prettyName": "riskConfiguration",
+    "size": "30",
+    "validationMessage": "",
+    "validationRegExp": ""
+  }));
 });

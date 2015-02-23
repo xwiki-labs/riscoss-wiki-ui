@@ -12,7 +12,7 @@
   
   #if($ok)
     #set($riskAnalysisSession = $xwiki.getDocument("${request.sessionSpace}.${request.sessionName}"))
-    #set($riskAnalysisSessionObject = $riskAnalysisSession.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass", true))
+    #set($riskAnalysisSessionObject = $riskAnalysisSession.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass", true))
     $riskAnalysisSessionObject.set("entity", "RISCOSSPlatformEntities.${request.targetEntity}")
     
     #foreach($riskConfiguration in $request.getParameterValues('riskConfigurations'))

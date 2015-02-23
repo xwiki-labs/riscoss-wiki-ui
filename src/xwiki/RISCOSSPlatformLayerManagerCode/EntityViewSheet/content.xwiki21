@@ -47,7 +47,7 @@
 
 = Risk analysis
 
-#set($query = "from doc.object(RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass) as ras where ras.entity = '${doc.fullName}'")
+#set($query = "from doc.object(RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass) as ras where ras.entity = '${doc.fullName}'")
 #set($riskAnalysisSessionDocumentNames = $services.query.xwql($query).execute())
 
 |= Risk analysis session |= Analyzed risk configurations

@@ -2,7 +2,7 @@
 
 #if($request.entity && $request.riskConfiguration && $request.sessionName && $request.resultData)
   #set($riskAnalysisSessionDocument = $xwiki.getDocument("RISCOSSPlatformRiskAnalysisSessions.${request.sessionName}"))
-  #set($riskAnalysisSession = $riskAnalysisSessionDocument.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass", true))
+  #set($riskAnalysisSession = $riskAnalysisSessionDocument.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass", true))
   $riskAnalysisSession.set("entity", $request.entity)
   #set($riskEvaluation = $riskAnalysisSessionDocument.getObject("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass", true))
   $riskEvaluation.set("riskConfiguration", $request.riskConfiguration)

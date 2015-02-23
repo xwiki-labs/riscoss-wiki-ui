@@ -6,7 +6,7 @@
     "entity" : { "type" : "text", "html" : "true", "filterable" : "true"}
 })
 #set($options = { 
-   "className":"RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass",
+   "className":"RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass",
    "translationPrefix" : "riscossPlatform.riskAnalysisManager.riskAnalysisSessionsTable.",
    "tagCloud" : false,
    "rowCount": 10

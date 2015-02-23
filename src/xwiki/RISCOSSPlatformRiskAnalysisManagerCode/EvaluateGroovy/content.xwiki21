@@ -200,12 +200,11 @@ public JSONObject getRiskData(Object services,
     return out;
 }
 
-private String RISK_SESS_CLS = "RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass";
 private String RISK_EVAL_CLS = "RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass";
 
 public String targetForSession(Object sessionDoc)
 {
-    def riskSessionObj = sessionDoc.getObject(RISK_SESS_CLS);
+    def riskSessionObj = sessionDoc.getObject(RISK_EVAL_CLS);
     return riskSessionObj.getProperty("entity").getValue();
 }
 
@@ -248,6 +247,34 @@ public File getAttachDir(Object services, Object xcontext, Object collectorDoc)
     return file;
 }
 
+public String evaluatorForSession(Object xcontext, Object sessionDoc)
+{
+    def vcontext = xcontext.get("vcontext");
+    def xwiki = vcontext.get("xwiki");
+    def services = vcontext.get("services");
+
+    def RISK_MODEL_PTR_CLS = "RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass";
+    def RISK_MODEL_CLS = "RISCOSSPlatformModelManagerCode.RiskModelClass";
+    def ENTITY_CLS = "RISCOSSPlatformLayerManagerCode.EntityClass";
+
+    def riskEvalObj = sessionDoc.getObject(RISK_EVAL_CLS);
+    def riskConfDocName = riskEvalObj.getProperty("riskConfiguration").getValue();
+    def riskConfDoc = xwiki.getDocument(riskConfDocName);
+    def targetDocName = targetForSession(sessionDoc);
+    def targetDoc = xwiki.getDocument(targetDocName);
+    def layer = targetDoc.getObject(ENTITY_CLS).getProperty("layer").getValue();
+
+    String evaluator = null;
+    for (String riskModel : riskConfDoc.getObjects(RISK_MODEL_PTR_CLS, "layer", layer)) {
+        def riskModelDoc = xwiki.getDocument(riskModel.getProperty("riskModel").getValue());
+        def e = riskModelDoc.getObject(RISK_MODEL_CLS).getProperty("evaluator").getValue();
+        if (evaluator != null && !evaluator.equals(e)) {
+            throw new RuntimeException("All ")
+        }
+    }
+    return riskModels.substring(1);
+}
+
 public String riskModelsForSession(Object xcontext, Object sessionDoc)
 {
     def vcontext = xcontext.get("vcontext");
@@ -257,7 +284,6 @@ public String riskModelsForSession(Object xcontext, Object sessionDoc)
     def RISK_MODEL_PTR_CLS = "RISCOSSPlatformRiskConfigurationManagerCode.RiskModelClass";
     def RISK_MODEL_CLS = "RISCOSSPlatformModelManagerCode.RiskModelClass";
     def ENTITY_CLS = "RISCOSSPlatformLayerManagerCode.EntityClass";
-    def EVAL_GROOVY_PG = "RISCOSSPlatformRiskAnalysisManagerCode.EvaluateGroovy";
 
     def riskEvalObj = sessionDoc.getObject(RISK_EVAL_CLS);
     def riskConfDocName = riskEvalObj.getProperty("riskConfiguration").getValue();
@@ -300,8 +326,7 @@ public Object getSessionDoc(Object xwiki, String targetName, String riskConfig, 
             riskConfDoc.getTitle() + " Risk Configuration");
         def riskEvalObj = sessionDoc.getObject(RISK_EVAL_CLS, true);
         riskEvalObj.set("riskConfiguration", riskConfDoc.getFullName());
-        def riskSessionObj = sessionDoc.getObject(RISK_SESS_CLS, true);
-        riskSessionObj.set("entity", targetDoc.getFullName());
+        riskEvalObj.set("entity", targetDoc.getFullName());
         sessionDoc.saveWithProgrammingRights("Created new risk analysis session");
     }
     return sessionDoc;

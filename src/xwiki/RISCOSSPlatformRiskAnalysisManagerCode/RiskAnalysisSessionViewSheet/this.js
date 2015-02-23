@@ -1,5 +1,5 @@
 XWikiDoc(function (doc) {
-    doc.setParent("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass");
+    doc.setParent("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass");
     doc.setCustomClass(undefined);
     doc.setCreationDate("0");
     doc.setDate("0");

@@ -6,7 +6,7 @@ $xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionViewSh
 #else
   #set($asDoc = $doc)
 #end
-#set($riskAnalysisSessionObject = $asDoc.getObject('RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionClass'))
+#set($riskAnalysisSessionObject = $asDoc.getObject('RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass'))
 #set($targetEntity = $xwiki.getDocument($riskAnalysisSessionObject.getProperty('entity').value))
 #set($riskEvaluation = $asDoc.getObject('RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass'))
 #set($riskConfiguration = $xwiki.getDocument($riskEvaluation.getProperty('riskConfiguration').value))

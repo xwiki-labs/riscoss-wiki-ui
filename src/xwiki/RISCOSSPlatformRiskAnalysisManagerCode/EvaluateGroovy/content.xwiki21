@@ -34,11 +34,15 @@ public String getRemoteAnalyzerPath(Object services)
     return ""+file;
 }
 
-private JSONObject runEvaluator(Object services, String cmd, String riskModels, JSONObject inputs)
+private JSONObject runEvaluator(Object services,
+                                String cmd,
+                                String riskModels,
+                                JSONObject inputs,
+                                String[] evaluator)
 {
     def rap = getRemoteAnalyzerPath(services);
-    String command = "java -jar -Xmx2048m " + rap + " " + cmd + " " + riskModels + " -";
-    String workDir = System.getProperty("user.dir");
+    String command = evaluator[1] + " " + cmd + " " + riskModels + " -";
+    String workDir = evaluator[0];
     JSONObject out =
         new JSONObject(services.commandRunner.run(command, inputs.toString(), 120000, workDir));
     out.put("command", command);
@@ -132,7 +136,8 @@ public JSONObject evaluate(Object xcontext, Object sessionDoc, JSONObject interp
 {
     JSONObject output = interpretedRiskData.getJSONObject("output")
     String riskModels = riskModelsForSession(xcontext, sessionDoc);
-    return runEvaluator(getServices(xcontext), "evaluate", riskModels, output);
+    String[] evaluator = evaluatorForSession(xcontext, sessionDoc);
+    return runEvaluator(getServices(xcontext), "evaluate", riskModels, output, evaluator);
 }
 
 public JSONObject getInputs(Object xcontext, Object sessionDoc)
@@ -148,7 +153,8 @@ public JSONObject getInputs(Object xcontext, Object sessionDoc)
         return inputs;
     }
     String riskModels = riskModelsForSession(xcontext, sessionDoc);
-    return runEvaluator(getServices(xcontext), "getInputs", riskModels, inputs);
+    String[] evaluator = evaluatorForSession(xcontext, sessionDoc);
+    return runEvaluator(getServices(xcontext), "getInputs", riskModels, inputs, evaluator);
 }
 
 public JSONObject getRiskData(Object services,
@@ -201,6 +207,7 @@ public JSONObject getRiskData(Object services,
 }
 
 private String RISK_EVAL_CLS = "RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass";
+private String RISK_EVALUATOR_CLS = "RISCOSSPlatformCode.EvaluatorClass";
 
 public String targetForSession(Object sessionDoc)
 {
@@ -247,7 +254,7 @@ public File getAttachDir(Object services, Object xcontext, Object collectorDoc)
     return file;
 }
 
-public String evaluatorForSession(Object xcontext, Object sessionDoc)
+public String[] evaluatorForSession(Object xcontext, Object sessionDoc)
 {
     def vcontext = xcontext.get("vcontext");
     def xwiki = vcontext.get("xwiki");
@@ -265,14 +272,27 @@ public String evaluatorForSession(Object xcontext, Object sessionDoc)
     def layer = targetDoc.getObject(ENTITY_CLS).getProperty("layer").getValue();
 
     String evaluator = null;
-    for (String riskModel : riskConfDoc.getObjects(RISK_MODEL_PTR_CLS, "layer", layer)) {
+    def models = riskConfDoc.getObjects(RISK_MODEL_PTR_CLS, "layer", layer);
+    def hasModels = false
+    for (Object riskModel : models) {
+        hasModels = true;
         def riskModelDoc = xwiki.getDocument(riskModel.getProperty("riskModel").getValue());
+        if (riskModelDoc.isNew()) { throw new RuntimeException("missing model " + riskModelDoc); }
         def e = riskModelDoc.getObject(RISK_MODEL_CLS).getProperty("evaluator").getValue();
         if (evaluator != null && !evaluator.equals(e)) {
-            throw new RuntimeException("All ")
+            throw new RuntimeException("All models for a configuration must use one evaluator");
         }
+        evaluator = e;
     }
-    return riskModels.substring(1);
+    if (!hasModels) { throw new RuntimeException("No models!"); }
+    if (evaluator == null) { throw new RuntimeException("No evaluator found. Models:" + models); }
+    def evalDoc = xwiki.getDocument(evaluator);
+    def workDir = getAttachDir(services, xcontext, evalDoc);
+    def command = evalDoc.getObject(RISK_EVALUATOR_CLS).getProperty("command").getValue();
+    String[] out = new String[2];
+    out[0] = workDir;
+    out[1] = command;
+    return out;
 }
 
 public String riskModelsForSession(Object xcontext, Object sessionDoc)
@@ -299,7 +319,7 @@ public String riskModelsForSession(Object xcontext, Object sessionDoc)
         def riskModelData = getAttachFile(services, xcontext, riskModelDoc.getAttachment(attachName));
         riskModels = riskModels + "," + riskModelData;
     }
-    return riskModels.substring(1);
+    return ("".equals(riskModels)) ? "" : riskModels.substring(1);
 }
 
 public Object getSessionDoc(Object xwiki, String targetName, String riskConfig, boolean create)

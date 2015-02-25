@@ -1,17 +1,44 @@
 {{velocity}}
 ## -*- Mode:Velocity
 #if($request.create)
-  $request.parent
-  $request.space
-  $request.template
-  $request.name
+  ##$request.parent
+  ##$request.space
+  ##$request.template
+  ##$request.name
 
   #set($documentReference = $services.model.createDocumentReference(null, $request.space, $request.name))
 
   #set($cancelRedirect = $xwiki.getURL("${request.space}.WebHome"))
   #set($redirect = $xwiki.getURL($documentReference, "edit", "template=${request.template}&parent=${request.space}.WebHome&title=${request.name}&cancelredirect=${cancelRedirect}"))
-  
-  $response.sendRedirect($redirect)
+ 
+## Check if adopter entity
+#set($surveyURL = "")
+#if($request.template && "$request.template" != "" && $xwiki.exists($request.template))
+   #set($template = $request.template)
+   #set($templateDoc = $xwiki.getDocument($template))
+   #set($templateEntityObj = $templateDoc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass"))
+   #set($layer = $templateEntityObj.layer)
+   #if("$layer" != ""  && $xwiki.exists($layer))
+     #set($layerDoc = $xwiki.getDocument($layer)) 
+     #set($layerObj = $layerDoc.getObject("RISCOSSPlatformLayerManagerCode.LayerClass"))
+     #if("$layerObj.surveyURL" != "")
+        #set($surveyURL = $layerObj.surveyURL)
+     #end
+   #end
+#end
+
+## Show the iframe
+#if($surveyURL != "")
+{{html}}
+<iframe src="$surveyURL" id="surveyIframe" frameborder="0" scrolling="" width="100%" height="450px"></iframe>
+<div style="width:100%; text-align:center">
+<input type="submit" class="button" value="Survey done" onclick="document.location.replace('$redirect')"/>
+</div>
+{{/html}}
+#else
+   $response.sendRedirect($redirect)
+#end
+
 #elseif(!($request.space && $request.template && $request.fieldLabel))
   {{error}}Missing parameter{{/error}}
 #else

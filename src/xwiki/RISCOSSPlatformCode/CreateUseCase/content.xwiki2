@@ -1,0 +1,15 @@
+{{include document="RISCOSSPlatformCode.Macros"/}}{{velocity}}
+## -*- Mode:Velocity
+$xwiki.jsx.use("RISCOSSPlatformCode.Create", {"minify" : false}) ##
+== Define Use Case and Evaluate Projects ==
+##      <input type="submit" class="button" name="submit" value="Get Started" />
+(% class="buttonwrapper" %)(((
+    #generateCreateDialogLink({
+      "space": "RISCOSSPlatformEntities", 
+      "template": "RISCOSSPlatformLayers.UseCaseTemplate", 
+      "linkLabel": "Get Started", 
+      "dialogTitle": "$services.localization.render('riscossPlatform.layerManager.createEntity.title') 'Use Case'", 
+      "fieldLabel": "$services.localization.render('riscossPlatform.layerManager.createEntity.entityName', 'Use Case')"
+    })
+)))
+{{/velocity}}

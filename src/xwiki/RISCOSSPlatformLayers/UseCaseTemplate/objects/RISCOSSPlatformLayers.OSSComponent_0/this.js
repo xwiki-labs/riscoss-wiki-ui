@@ -1,0 +1,2 @@
+XWikiObj(function (obj) {
+});

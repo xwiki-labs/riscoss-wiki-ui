@@ -1,5 +1,5 @@
 {{velocity wiki="false"}}
-
+## -*- Mode:Velocity
 ## Output fields:
 ##   entity
 ##   layer
@@ -13,7 +13,7 @@
 #set($offset = $mathtool.toInteger($request.get('offset')))
 ## offset starts from 0 in velocity and 1 in javascript
 #set($offset = $offset - 1)
-#if (!$offset || $offset < 0)
+#if (!$offset || $offset < 0)##>## syntax highligher bug
   #set($offset = 0)
 #end
 #set($limit = $mathtool.toInteger($request.get('limit')))
@@ -23,11 +23,15 @@
 
 ## Add filter clauses
 #if($request.entity)
-  #set($filter = " AND upper(doc.title) LIKE upper(:entityFilter)")
+  #set($filter = " AND doc.title = :entityFilter")
 #end
 
 #if($request.layer)
-  #set($filter = "$!{filter} AND upper(entity.layer) LIKE upper(:layerFilter)")
+  #set($filter = "$!{filter} AND entity.layer = :layerFilter")
+#end
+
+#if($request.creator)
+  #set($filter = "$!{filter} AND doc.creator = :creatorFilter")
 #end
 
 ## Add order by clauses
@@ -46,14 +50,13 @@
 #end
 
 ## Build the query
-#set($xwql = "SELECT doc.fullName, doc.title, entity.layer FROM Document doc, doc.object(RISCOSSPlatformLayerManagerCode.EntityClass) AS entity WHERE doc.space='RISCOSSPlatformEntities' $!{filter} $!{orderBy}")
+#set($xwql = "SELECT doc.fullName, doc.title, entity.layer FROM Document doc, " +
+    "doc.object(RISCOSSPlatformLayerManagerCode.EntityClass) AS entity WHERE " +
+    "doc.space='RISCOSSPlatformEntities' $!{filter} $!{orderBy}")
 #set($query = $services.query.xwql($xwql))
-#if($request.entity)
-  #set($discard = $query.bindValue("entityFilter", "%${request.entity}%"))
-#end
-#if($request.layer)
-  #set($discard = $query.bindValue("layerFilter", "%${request.layer}%"))
-#end
+#if($request.entity && $query.bindValue("entityFilter", "${request.entity}"))#end
+#if($request.layer && $query.bindValue("layerFilter", "${request.layer}"))#end
+#if($request.creator && $query.bindValue("creatorFilter", "${request.creator}"))#end
 #set($results = $query.execute())
 
 ## Count total results
@@ -62,7 +65,7 @@
 
 ## Build the result JSON
 #set($resultMap = {})
-#set($discard = $resultMap.put("totalrows", $util.parseInt($countResult[0]))) 
+#set($discard = $resultMap.put("totalrows", $util.parseInt($countResult[0])))
 #set($discard = $resultMap.put("returnedrows", $mathtool.min($results.size(), $limit)))
 #set($discard = $resultMap.put("offset", $mathtool.add($offset, 1)))
 #set($discard = $resultMap.put("reqNo", $util.parseInt($request.reqNo)))
@@ -71,7 +74,11 @@
   #set($row = {})
   #set($discard = $row.put("doc_viewable", true))
   #set($discard = $row.put("entity", $result[1]))
-  #set($discard = $row.put("entity_url", $xwiki.getURL($result[0], "view")))
+  #if("$!request.getParameter('callPage')" != "")
+    #set($discard = $row.put("entity_url", "$request.getParameter('callPage')$result[0]"))
+  #else
+    #set($discard = $row.put("entity_url", $xwiki.getURL($result[0])))
+  #end
   #if($result[2])
     #set($discard = $row.put("layer", $xwiki.getDocument($result[2]).title))
     #set($discard = $row.put("layer_url", $xwiki.getURL($result[2])))

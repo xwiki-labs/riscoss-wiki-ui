@@ -144,7 +144,7 @@ require(['jquery'], function ($) {
       $td = appendElem($tr, 'td');
       if (entry.rawValue) {
           $td.append(entry.rawValue);
-      } else if (["NUMBER","INTEGER","REAL"].indexOf(entry.type)) {
+      } else if (["NUMBER","INTEGER","REAL"].indexOf(entry.type) > -1) {
           $td.append(entry.value);
       } else {
           $td.append(-1);

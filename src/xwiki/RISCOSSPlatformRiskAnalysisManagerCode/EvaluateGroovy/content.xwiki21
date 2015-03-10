@@ -18,30 +18,14 @@ public JSONObject parseJSON(String stdout)
     return new JSONObject(stdout);
 }
 
-public String getRemoteAnalyzerPath(Object services)
-{
-    Object env = services.component.getInstance(Environment.class);
-    Object permDir = env.getPermanentDirectory();
-    Object file = new File(permDir, "riscoss-remote-risk-analyser.jar");
-    if (!file.exists()) {
-        Object input = Thread.currentThread().getContextClassLoader().getResourceAsStream(
-            "riscoss-remote-risk-analyser.jar");
-        Object output = new FileOutputStream(file);
-        IOUtils.copy(input, output);
-        IOUtils.closeQuietly(input);
-        IOUtils.closeQuietly(output);
-    }
-    return ""+file;
-}
-
 private JSONObject runEvaluator(Object services,
                                 String cmd,
                                 String riskModels,
                                 JSONObject inputs,
                                 String[] evaluator)
 {
-    def rap = getRemoteAnalyzerPath(services);
-    String command = evaluator[1] + " " + cmd + " " + riskModels + " -";
+    String command = evaluator[1] + " " + cmd + " " + riskModels;
+    if (inputs != null) { command += " -"; }
     String workDir = evaluator[0];
     JSONObject out =
         new JSONObject(services.commandRunner.run(command, inputs.toString(), 120000, workDir));
@@ -203,7 +187,9 @@ public JSONObject getRiskData(Object services,
     out.put("result", inputResult);
     out.put("errors", errors);
     out.put("warnings", warnings);
-    return out;
+    JSONObject finalOut = new JSONObject();
+    finalOut.put("output", out);
+    return finalOut;
 }
 
 private String RISK_EVAL_CLS = "RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass";
@@ -273,7 +259,7 @@ public String[] evaluatorForSession(Object xcontext, Object sessionDoc)
 
     String evaluator = null;
     def models = riskConfDoc.getObjects(RISK_MODEL_PTR_CLS, "layer", layer);
-    def hasModels = false
+    def hasModels = false;
     for (Object riskModel : models) {
         hasModels = true;
         def riskModelDoc = xwiki.getDocument(riskModel.getProperty("riskModel").getValue());
@@ -347,6 +333,49 @@ public Object getSessionDoc(Object xwiki, String targetName, String riskConfig, 
         def riskEvalObj = sessionDoc.getObject(RISK_EVAL_CLS, true);
         riskEvalObj.set("riskConfiguration", riskConfDoc.getFullName());
         riskEvalObj.set("entity", targetDoc.getFullName());
+        sessionDoc.saveWithProgrammingRights("Created new risk analysis session");
+    }
+    return sessionDoc;
+}
+
+public Object getSessionDoc2(Object xwiki,
+                             String targetName,
+                             String useCaseName,
+                             String riskConfig,
+                             boolean create)
+{
+    if (riskConfig.indexOf('.') == -1) {
+        riskConfig = "RISCOSSPlatformRiskConfigurations." + riskConfig;
+    }
+    if (targetName.indexOf('.') == -1) {
+        riskConfig = "RISCOSSPlatformEntities." + targetName;
+    }
+    if (useCaseName.indexOf('.') == -1) {
+        useCaseName = "RISCOSSPlatformEntities." + useCaseName;
+    }
+
+    def riskConfDoc = xwiki.getDocument(riskConfig);
+    if (riskConfDoc.isNew()) { return "ERROR_riskConfig_nonexistant"; }
+    def targetDoc = xwiki.getDocument(targetName);
+    if (targetDoc.isNew()) { return "ERROR_targetName_nonexistant"; }
+    def useCaseDoc = xwiki.getDocument(useCaseName);
+    if (useCaseDoc.isNew()) { return "ERROR_useCaseName_nonexistant"; }
+
+    def sessionDoc = xwiki.getDocument("RISCOSSPlatformRiskAnalysisSessions",
+        targetName.substring(targetName.lastIndexOf('.')+1) +
+        "_for_" +
+        useCaseName.substring(useCaseName.lastIndexOf('.')+1) +
+        "_evaluatedWith_" +
+        riskConfig.substring(riskConfig.lastIndexOf('.')+1)
+    );
+    if (sessionDoc.isNew()) {
+        if (!create) { return "no_such_session"; }
+        sessionDoc.setTitle("Analysis of " + targetDoc.getTitle() + " using " +
+            riskConfDoc.getTitle() + " Risk Configuration");
+        def riskEvalObj = sessionDoc.getObject(RISK_EVAL_CLS, true);
+        riskEvalObj.set("riskConfiguration", riskConfDoc.getFullName());
+        riskEvalObj.set("entity", targetDoc.getFullName());
+        riskEvalObj.set("useCase", useCaseDoc.getFullName());
         sessionDoc.saveWithProgrammingRights("Created new risk analysis session");
     }
     return sessionDoc;

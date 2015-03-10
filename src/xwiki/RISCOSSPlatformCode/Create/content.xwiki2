@@ -29,12 +29,15 @@
 
 ## Show the iframe
 #if($surveyURL != "")
+#set($discard = $response.addCookie("riscoss_nextPage", "$redirect", 3600))
+#set($discard = $response.addCookie("riscoss_entityName", "$request.name", 3600))
 {{html}}
-<iframe src="$surveyURL" id="surveyIframe" frameborder="0" scrolling="" width="100%" height="450px"></iframe>
+<iframe src="$surveyURL" id="surveyIframe" frameborder="0" scrolling="" width="100%" height="600px"></iframe>
 <div style="width:100%; text-align:center">
-<input type="submit" class="button" value="Survey done" onclick="document.location.replace('$redirect')"/>
 </div>
+<a href="$redirect">Skip this step</a>
 {{/html}}
+
 #else
    $response.sendRedirect($redirect)
 #end

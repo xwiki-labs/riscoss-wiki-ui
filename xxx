@@ -1,0 +1,69 @@
+
+hclgha
+achu
+
+s
+-----BEGIN ANALYSIS OUTPUT-----
+{
+  "UseCase:StrategyInitiative": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "UseCase:SkillRel": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "UseCase:StrategyAcquisition": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "UseCase:StrategyIntegration": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "UseCase:CurrentSupply": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "UseCase:StrategyFork": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "UseCase:SkillComm": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "UseCase:SkillPatch": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "UseCase:SkillLegal": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "UseCase:StrategyNone": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "OSSComp:github:repo:stargazers_count": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "OSSComp:github:repo:forks_count": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "OSSComp:github:repo:open_issues_count": {
+    "type": "NUMBER",
+    "value": 0
+  },
+  "OSSComp:github:repo:subscribers_count": {
+    "type": "NUMBER",
+    "value": 0
+  }
+}
+-----END ANALYSIS OUTPUT-----
+
+asgxcjgv
+
+ssy

@@ -10,4 +10,16 @@ XClass(function (xcl, XWiki) {
     "validationMessage": "",
     "validationRegExp": ""
   }));
+  xcl.addProp("layer", props.DBList.create({
+    "classname": "RISCOSSPlatformLayerManagerCode.LayerClass",
+    "customDisplay": "",
+    "idField": "",
+    "picker": "0",
+    "prettyName": "layer",
+    "relationalStorage": "1",
+    "sort": "none",
+    "validationMessage": "",
+    "validationRegExp": "",
+    "valueField": ""
+  }));
 });

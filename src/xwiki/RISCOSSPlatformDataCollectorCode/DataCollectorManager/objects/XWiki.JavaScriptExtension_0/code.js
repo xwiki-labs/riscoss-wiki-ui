@@ -107,6 +107,7 @@ require(['jquery'], function ($) {
   };
 
   var edit = function (config, $elem) {
+    if (!config.collectors.length) { return; }
     var $updateOrCreate = appendElem($elem, 'input');
     $updateOrCreate.attr('type', 'hidden');
     $updateOrCreate.attr('value', 'updateOrCreate');
@@ -136,6 +137,7 @@ require(['jquery'], function ($) {
   };
 
   var view = function (config, $elem) {
+    if (!config.collectors.length) { return; }
     $elem.append('<h1>'+MESSAGES.dataCollectors+'</h1>');
     var $table = appendElem($elem, 'table');
     var $tbody = appendElem($table, 'tbody');

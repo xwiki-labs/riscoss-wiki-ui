@@ -1,0 +1,69 @@
+{{velocity}}
+## -*- Mode:Velocity
+#set($surveyID = $request.get('surveyID'))
+#set($responseID = $request.get('responseID'))
+#if ("$!surveyID" == "" || "$!responseID" == "")
+    {{info}} This page contains code for extracting data from LimeSurvey and putting it into the Risk Data Repository. {{/info}}
+#else
+    #set($CMD = "java -jar ./TestCollectors-0.0.1-SNAPSHOT-jar-with-dependencies.jar --stdin-conf")
+    #set($DCAPI = $xwiki.parseGroovyFromPage("RISCOSSPlatformDataCollectorCode.DataCollectorGroovy"))
+    #set($API = $xwiki.parseGroovyFromPage("RISCOSSPlatformCode.SurveyCompleteGroovy"))
+    #set($wrkDir = $DCAPI.getAttachDir($services, $xcontext, $doc))
+    #set($conf = $doc.getObject($doc.getFullName()))
+    #set($inputs = $API.getJSONObject())
+    #set($discard = $inputs.put("url", $conf.getProperty('surveyBaseURL').getValue()))
+    #set($discard = $inputs.put("username", $conf.getProperty('limesurveyUser').getValue()))
+    #set($discard = $inputs.put("password", $conf.getProperty('limesurveyPass').getValue()))
+    #set($discard = $inputs.put("surveyID", $surveyID))
+    #set($discard = $inputs.put("responseID", $responseID))
+    #foreach($cookie in $request.getCookies())
+        #if ($cookie.getName() == "riscoss_nextPage")
+            #set($nextPage = $cookie.getValue())
+        #elseif($cookie.getName() == "riscoss_entityName")
+            #set($discard = $inputs.put("targetEntity", $cookie.getValue()))
+        #end
+    #end
+    #set($res = $API.runCollector($services, $CMD, $inputs, $wrkDir.getAbsolutePath()))
+    #if ($res.get("error") != "none" || "$!res.opt('output')" == "")
+
+        {{error}}
+            Failed to get data from LimeSurvey
+
+            {{code language="none"}}$res{{/code}}
+
+            STDOUT: {{code language="none"}}$res.get('stdout'){{/code}}
+
+            STDERR: {{code language="none"}}$res.get('stderr'){{/code}}
+
+        {{/error}}
+
+    #else
+        #set($confDoc = $xwiki.getDocument("RISCOSSPlatformCode.RISCOSSConfiguration"))
+        #set($superConf = $confDoc.getObject("RISCOSSPlatformCode.RISCOSSConfiguration"))
+        #set($rdrPath = $superConf.getProperty("rdr").getValue())
+        #set($rdrResp = $API.uploadToRDR($res.get('output').toString(), $rdrPath))
+        #if($rdrResp.get('error') != "none")
+
+            {{error}}
+                Failed to upload data to Risk Data Repository
+
+                HTTP code: $rdrResp.get("responseCode")
+
+                {{code language="none"}}$rdrResp.get("response"){{/code}}
+
+            {{/error}}
+
+        #else
+            {{info}} Done! {{/info}}
+
+            #if ("$!nextPage" != "")
+                {{html clean="false"}}<script>
+                    if (window !== window.top) {
+                        window.top.location.href = "$nextPage";
+                    }
+                </script>{{/html}}
+            #end
+        #end
+    #end
+#end
+{{/velocity}}

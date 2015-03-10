@@ -31,9 +31,12 @@ $outConf.put("collectors", $collectors)
   #end
 #end
 
+#set ($entityObj = $entityDoc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass"))
+#set ($layer = $entityObj.getProperty("layer").getValue())
+
 #set ($collectorDocNames =
   $services.query.xwql(
-    'from doc.object(RISCOSSPlatformDataCollectorCode.DataCollectorClass) as x').execute())
+    'from doc.object(RISCOSSPlatformDataCollectorCode.DataCollectorClass) as x where x.layer = :layer').bindData("layer", $layer).execute())
 #foreach($collectorName in $collectorDocNames)
   #set ($collectorOut = {})
   $collectors.add($collectorOut)

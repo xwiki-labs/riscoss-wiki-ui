@@ -68,7 +68,11 @@
 
 #if ($hasEdit)
 
+#if ($layer != "RISCOSSPlatformLayers.UseCase")
+
 {{include document="RISCOSSPlatformDataCollectorCode.DataCollectorManager"/}}
+
+#end
 
 ----
 
@@ -77,6 +81,11 @@
 [[Edit entity>>$doc.getExternalURL("edit")]] | [[Delete entity>>$doc.getExternalURL("delete", "xredirect=${xredirect}")]]
 </span>
 #end
+
+#if ($layer == "RISCOSSPlatformLayers.UseCase")
+{{include document="RISCOSSPlatformCode.UseCaseManager"/}}
+#end
+
 {{/html}}
 {{/velocity}}
 

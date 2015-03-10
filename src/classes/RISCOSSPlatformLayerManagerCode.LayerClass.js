@@ -16,4 +16,7 @@ XClass(function (xcl, XWiki) {
   xcl.addProp("surveyURL", props.XString.create({
     "prettyName": "Data collection survey URL (if applicable)"
   }));
+  xcl.addProp("editHeading", props.XString.create({
+    "prettyName": "Content to place in this entity's edit UI"
+  }));
 });

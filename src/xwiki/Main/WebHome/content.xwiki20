@@ -1,3 +1,10 @@
+{{warning}}
+= Hard hat area =
+This is a development wiki for the [[RISCOSS project>>http://riscoss.eu/]]
+it is for collaboratively developing the platform and it is not ready for
+normal usage.
+{{/warning}}
+
 {{html wiki="true"}}
 <p style="text-align: center">[[image:riscoss-logo.png]]</p>
 {{/html}}

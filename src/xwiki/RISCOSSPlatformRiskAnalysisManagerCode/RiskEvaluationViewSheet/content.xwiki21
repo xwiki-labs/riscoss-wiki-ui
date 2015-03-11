@@ -1,8 +1,8 @@
 {{velocity}}
 ## -*- Mode:Velocity
-$xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionViewSheet", {"minify":"false"})
-#if("$!RiskAnalysisSessionViewSheet_analisysSessionDoc" != "")
-  #set($asDoc = $RiskAnalysisSessionViewSheet_analisysSessionDoc)
+$xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationViewSheet", {"minify":"false"})
+#if("$!RiskEvaluationViewSheet_analisysSessionDoc" != "")
+  #set($asDoc = $RiskEvaluationViewSheet_analisysSessionDoc)
 #else
   #set($asDoc = $doc)
 #end

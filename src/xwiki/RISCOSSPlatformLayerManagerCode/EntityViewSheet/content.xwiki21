@@ -61,8 +61,8 @@
   )))
   #if($riskAnalysisSessionDocumentNames.size() == 1)
 
-      #set($RiskAnalysisSessionViewSheet_analisysSessionDoc = $riskAnalysisDocument)
-      {{include reference="RISCOSSPlatformRiskAnalysisManagerCode.RiskAnalysisSessionViewSheet" /}}
+      #set($RiskEvaluationViewSheet_analisysSessionDoc = $riskAnalysisDocument)
+      {{include reference="RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationViewSheet" /}}
   #end
 #end
 

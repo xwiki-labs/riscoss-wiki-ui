@@ -31,4 +31,6 @@
 ##
 {{/velocity}}
 
+{{include reference="RISCOSSPlatformCode.CreateFromGitHub" /}}
+
 {{include reference="RISCOSSPlatformCode.CreateUseCase" /}}

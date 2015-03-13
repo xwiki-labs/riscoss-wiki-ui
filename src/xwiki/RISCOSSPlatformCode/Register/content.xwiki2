@@ -1,11 +1,11 @@
 {{velocity output="false"}}
 #macro(afterRegistration, $xwikiname)
-  #set($sql = "from doc.object(XWiki.XWikiGroups) as obj where doc.fullName = 'RISCOSSPlatformGroups.Producers' and obj.member = :member")
+  #set($sql = "from doc.object(XWiki.XWikiGroups) as obj where doc.fullName = 'RISCOSSPlatformCode.ProducersGroup' and obj.member = :member")
   #if ("$!xwikiname" == "")
   #elseif ($services.query.xwql($sql).bindValue("member", "XWiki.${xwikiname}").execute().size() > 0)
   #else
     #set($userDoc = $xwiki.getDocument("XWiki.${xwikiname}"))
-    #set($group = $xwiki.getDocument('RISCOSSPlatformGroups.Producers'))
+    #set($group = $xwiki.getDocument('RISCOSSPlatformCode.ProducersGroup'))
     #set($gObj = $group.newObject('XWiki.XWikiGroups'))
     #set($discard = $gObj.set('member', $userDoc.getFullName()))
     $group.saveWithProgrammingRights("Added user")

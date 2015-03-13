@@ -75,8 +75,9 @@
 ##
 #if($ok == true)
   #set($entityDoc = $xwiki.getDocument($analyserAPI.targetForSession($sessionDoc)))
+  #set($useCaseDoc = $xwiki.getDocument($useCase))
   #set($rdrpath = $analyserAPI.getRDRPath($xwiki))
-  #set($riskData = $analyserAPI.getRiskData($services, $inputs, $rdrpath, $entityDoc.name))
+  #set($riskData = $analyserAPI.getRiskData2($services, $inputs, $rdrpath, $entityDoc.name, $useCaseDoc.name))
   #set($riskData_output = $riskData.optJSONObject('output'))
   #if ("$!riskData_output" == "" || "$!riskData_output.optJSONArray('errors')" == "")
     #set($ok = false)
@@ -92,6 +93,9 @@
           {{code language=none}}$err{{/code}}
 
         #end
+
+        RAWOUT: {{code language=none}}$riskData{{/code}}
+
       {{/error}}
     #end
   #end
@@ -129,13 +133,24 @@
         $riskData.toString(2)
       {{/code}}
 
+      RAWOUTPUT:
+
+      {{code language=none}}
+        $outRaw
+      {{/code}}
+
     {{/error}}
   #end
 #end
 ##
 #if($ok == true)
-  $analyserAPI.storeResults($sessionDoc, $result, $riskData, $outRaw, "UNUSED", 0)##
-  #if ("$!request.getProperty('xredirect')" != "")
+  #if ($analyserAPI.storeResults($sessionDoc, $result, $riskData, $outRaw, 0, 0) != "ok")
+
+    {{error}}
+        Failed to store results
+    {{/error}}
+
+  #elseif ("$!request.getProperty('xredirect')" != "")
     $response.sendRedirect($request.getProperty('xredirect'))
   #else
     $response.sendRedirect($sessionDoc.getURL())

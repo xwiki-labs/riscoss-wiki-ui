@@ -41,7 +41,7 @@ $xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationViewSheet",
       <div class="buttonwrapper">
         <a href="$asDoc.getExternalURL("delete", "xredirect=${xredirect}")">Delete Evaluation</a>
       </div>
-      <input type="submit" value="Re-Evaluate" class="button"/>
+      <!-- <input type="submit" value="Re-Evaluate" class="button"/> -->
     </form>
 {{/html}}
 #end

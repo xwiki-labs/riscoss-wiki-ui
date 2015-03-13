@@ -36,7 +36,7 @@ $outConf.put("collectors", $collectors)
 
 #set ($collectorDocNames =
   $services.query.xwql(
-    'from doc.object(RISCOSSPlatformDataCollectorCode.DataCollectorClass) as x where x.layer = :layer').bindData("layer", $layer).execute())
+    'from doc.object(RISCOSSPlatformDataCollectorCode.DataCollectorClass) as x where x.layer = :layer').bindValue("layer", $layer).execute())
 #foreach($collectorName in $collectorDocNames)
   #set ($collectorOut = {})
   $collectors.add($collectorOut)

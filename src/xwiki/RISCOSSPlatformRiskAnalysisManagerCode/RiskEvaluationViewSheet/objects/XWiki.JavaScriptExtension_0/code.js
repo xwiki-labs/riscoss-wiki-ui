@@ -163,8 +163,8 @@ require(['jquery'], function ($) {
     var dat = getData($('.resultData'));
     displayData($('.resultData')[0], dat);
 
-    var interpretedInput = getData($('.interpretedInput'));
-    showInput($('.interpretedInput'), interpretedInput.output.result);
+    var input = getData($('.resultInput'));
+    displayData($('.resultInput')[0], input.output.result);
   };
   main();
 });

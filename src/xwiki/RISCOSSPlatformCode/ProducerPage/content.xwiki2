@@ -13,24 +13,8 @@
    'creator': $xcontext.getUser()
 })
 #livetable('entities', $columns, $columnsProperties, $options)
-##
-#set($create = $services.localization.render("riscossPlatform.layerManager.createEntity.title"))
-##
-## TODO(cjd): translate
-#set($projName = "Name of new open source project")
-##
-(% class="buttonwrapper" %)(((
-#generateCreateDialogLink({
-     "space": "RISCOSSPlatformEntities",
-     "template": "RISCOSSPlatformLayers.OSSComponentTemplate",
-     "linkLabel": $create,
-     "dialogTitle": $create,
-     "fieldLabel": $projName
-   })
-)))
-##
 {{/velocity}}
 
-{{include reference="RISCOSSPlatformCode.CreateFromGitHub" /}}
+{{include reference="RISCOSSPlatformCode.CreateFromGithub" /}}
 
 {{include reference="RISCOSSPlatformCode.CreateUseCase" /}}

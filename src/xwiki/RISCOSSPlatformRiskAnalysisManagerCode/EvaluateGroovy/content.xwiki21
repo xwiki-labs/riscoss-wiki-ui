@@ -141,6 +141,64 @@ public JSONObject getInputs(Object xcontext, Object sessionDoc)
     return runEvaluator(getServices(xcontext), "getInputs", riskModels, inputs, evaluator);
 }
 
+public JSONObject getRiskData2(Object services,
+                               JSONObject inputs,
+                               String riskDataRepositoryURI,
+                               String targetName,
+                               String useCaseName)
+{
+    JSONArray errors = new JSONArray();
+    JSONArray warnings = new JSONArray();
+
+    def inputOutput = inputs.getJSONObject("output");
+    def inputResult = inputOutput.getJSONObject("result");
+
+    try {
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        for (String fullName : JSONObject.getNames(inputResult)) {
+            String entity = targetName;
+            String name = fullName;
+            if (name.indexOf("OSSComp:") == 0) {
+                name = name.substring(("OSSComp:").length());
+            } else if (name.indexOf("UseCase:") == 0) {
+                name = name.substring(("UseCase:").length());
+                entity = useCaseName;
+            }
+            JSONObject output = inputResult.optJSONObject(fullName);
+            if (output == null) { continue; }
+            String rdrUrl = String.format("%s/%s?id=%s&limit=1", riskDataRepositoryURI,
+                                          URLEncoder.encode(entity, "UTF-8"), URLEncoder.encode(
+                                          name, "UTF-8"));
+            output.put("rdrUrl", rdrUrl);
+            HttpGet get = new HttpGet(rdrUrl);
+            CloseableHttpResponse response = client.execute(get);
+
+            if (response.getStatusLine().getStatusCode() != 200) {
+                errors.put(String.format("Error retrieving risk data for %s: %s", name,
+                        response.getStatusLine().getReasonPhrase()));
+            } else {
+                JSONObject o = new JSONObject(IOUtils.toString(response.getEntity().getContent()));
+                JSONArray riskDataArray = o.getJSONArray("results");
+                if (riskDataArray.length() != 0) {
+                    JSONObject riskData = riskDataArray.getJSONObject(0);
+                    output.put("value", riskData.get("value"));
+                }
+            }
+            inputResult.put(fullName, output);
+        }
+    } catch (IOException e) {
+        errors.put(String.format("Error fetching risk data from %s", riskDataRepositoryURI), e);
+    }
+
+    JSONObject out = new JSONObject();
+    out.put("result", inputResult);
+    out.put("errors", errors);
+    out.put("warnings", warnings);
+    JSONObject finalOut = new JSONObject();
+    finalOut.put("output", out);
+    return finalOut;
+}
+
 public JSONObject getRiskData(Object services,
                               JSONObject inputs,
                               String riskDataRepositoryURI,
@@ -381,16 +439,17 @@ public Object getSessionDoc2(Object xwiki,
     return sessionDoc;
 }
 
-public void storeResults(Object sessionDoc,
-                         JSONObject results,
-                         JSONObject inputs,
-                         JSONObject raw,
-                         JSONObject interpreted,
-                         long now)
+public String storeResults(Object sessionDoc,
+                           JSONObject results,
+                           JSONObject inputs,
+                           JSONObject raw,
+                           Object interpreted,
+                           long now)
 {
     if (now < 1) {
         now = System.currentTimeMillis();
     }
+    if (sessionDoc.isNew()) { throw new RuntimeException(); }
     def riskEvalObj = sessionDoc.getObject(RISK_EVAL_CLS, false);
     riskEvalObj.set("inputData", inputs ? inputs.toString() : "");
     riskEvalObj.set("result", results ? results.toString() : "");
@@ -398,6 +457,7 @@ public void storeResults(Object sessionDoc,
     riskEvalObj.set("interpretedInput", interpreted ? interpreted.toString() : "");
     riskEvalObj.set("timeLastRun", now);
     sessionDoc.saveWithProgrammingRights("Saved results to risk analysis session");
+    return "ok";
 }
 
 public String getRDRPath(Object xwiki)

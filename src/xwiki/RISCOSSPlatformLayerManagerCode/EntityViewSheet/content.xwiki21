@@ -84,6 +84,11 @@
 
 #if ($layer == "RISCOSSPlatformLayers.UseCase")
 {{include document="RISCOSSPlatformCode.UseCaseManager"/}}
+#else
+== Collected data about this project ==
+
+(% id="collected-data" data-id="${doc.name}" %)((( )))
+$xwiki.jsx.use("RISCOSSPlatformCode.DisplayCollectedData")
 #end
 
 {{/html}}

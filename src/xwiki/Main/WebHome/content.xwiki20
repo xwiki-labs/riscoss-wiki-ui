@@ -12,7 +12,11 @@ normal usage.
 {{velocity}}
 #if ($hasAdmin)
 {{include reference="RISCOSSPlatformCode.AdminPage" /}}
-#elseif ($xwiki.getUser().isUserInGroup("RISCOSSPlatformGroups.Producers"))
+##
+## TODO: understand why this doesn't work
+## #elseif ($xwiki.getUser().isUserInGroup("RISCOSSPlatformCode.ProducersGroup"))
+##
+#elseif ($services.query.xwql("from doc.object(XWiki.XWikiGroups) as g where g.member = :mem and doc.fullName = 'RISCOSSPlatformCode.ProducersGroup'").bindValue('mem', $xcontext.getUser()).execute() == "[RISCOSSPlatformCode.ProducersGroup]")
 {{include reference="RISCOSSPlatformCode.ProducerPage" /}}
 #else
 {{include reference="RISCOSSPlatformCode.ConsumerPage" /}}

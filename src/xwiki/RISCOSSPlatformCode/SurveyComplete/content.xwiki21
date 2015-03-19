@@ -61,7 +61,9 @@
             #if ("$!nextPage" != "")
                 {{html clean="false"}}<script>
                     if (window !== window.top) {
-                        window.top.location.href = "$nextPage";
+                        var redirectURL = "$nextPage";
+                        redirectURL = redirectURL.replace("/edit/","/save/") + "&form_token=" + "$services.csrf.getToken()";
+                        window.top.location.href = redirectURL;
                     }
                 </script>{{/html}}
             #end

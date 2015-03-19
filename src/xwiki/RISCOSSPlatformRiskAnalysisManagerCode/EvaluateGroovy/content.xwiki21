@@ -251,7 +251,7 @@ public JSONObject getRiskData(Object services,
 }
 
 private String RISK_EVAL_CLS = "RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass";
-private String RISK_EVALUATOR_CLS = "RISCOSSPlatformCode.EvaluatorClass";
+private String RISK_EVALUATOR_CLS = "RISCOSSPlatformCode.AnalyserClass";
 
 public String targetForSession(Object sessionDoc)
 {
@@ -322,7 +322,7 @@ public String[] evaluatorForSession(Object xcontext, Object sessionDoc)
         hasModels = true;
         def riskModelDoc = xwiki.getDocument(riskModel.getProperty("riskModel").getValue());
         if (riskModelDoc.isNew()) { throw new RuntimeException("missing model " + riskModelDoc); }
-        def e = riskModelDoc.getObject(RISK_MODEL_CLS).getProperty("evaluator").getValue();
+        def e = riskModelDoc.getObject(RISK_MODEL_CLS).getProperty("analyser").getValue();
         if (evaluator != null && !evaluator.equals(e)) {
             throw new RuntimeException("All models for a configuration must use one evaluator");
         }

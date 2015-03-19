@@ -18,7 +18,7 @@ XClass(function (xcl, XWiki) {
     "validationMessage": "",
     "validationRegExp": ""
   }));
-  xcl.addProp("evaluator", props.XString.create({
+  xcl.addProp("analyser", props.XString.create({
     "customDisplay": "",
     "picker": "0",
     "prettyName": "Evaluation engine",

@@ -1,10 +1,17 @@
 {{include document="RISCOSSPlatformCode.Macros"/}}{{velocity}}
 ## -*- Mode:Velocity
 $xwiki.jsx.use("RISCOSSPlatformCode.Create", {"minify" : false}) ##
+$xwiki.ssx.use("RISCOSSPlatformCode.NavigationMenu") ##
 ## Needed for the XWiki.RISCOSSPlatform.initializeCreateDialog callback
 $xwiki.jsx.use("RISCOSSPlatformCode.ShowInDialog") ##
 #set($mainWikiId = $services.wiki.mainWikiId) ##
 #set($currentWikiId = $services.wiki.currentWikiId) ##
+##
+## Get RISCOSS platform configuration information
+#set($confDoc = $xwiki.getDocument("RISCOSSPlatformCode.RISCOSSConfiguration"))
+#set($superConf = $confDoc.getObject("RISCOSSPlatformCode.RISCOSSConfiguration"))
+#set($feedbackURL = $superConf.getProperty("feedbackURL").getValue())
+#set($expertFeedbackURL = $superConf.getProperty("expertFeedbackURL").getValue())
 ##
 #if($isGuest)
 * **[[$services.localization.render("login")>>$doc.getExternalURL("login")]]**
@@ -18,7 +25,13 @@ $xwiki.jsx.use("RISCOSSPlatformCode.ShowInDialog") ##
 ** ----
 ** [[$services.localization.render("logout")>>$xwiki.getDocument("XWiki.XWikiLogout").getExternalURL("logout")]]   
 #else
-* **[[$services.localization.render("logout")>>$xwiki.getDocument("XWiki.XWikiLogout").getExternalURL("logout")]]   
+* **[[$services.localization.render("logout")>>$xwiki.getDocument("XWiki.XWikiLogout").getExternalURL("logout")]]
+#if("$!feedbackURL" != "")
+* ** [[User feedback>>$feedbackURL||class="riscoss-feedback"]]   
+#end
+#if("$!expertFeedbackURL" != "")
+* ** [[Expert feedback>>$expertFeedbackURL||class="riscoss-feedback"]]
+#end
 #end
 #else
 * **$services.localization.render("riscossPlatform.domainManager")**

@@ -1,3 +1,3 @@
 XWikiObj(function (obj) {
-    obj.setCommand("node evaluator.js");
+    obj.setCommand("java -jar analyser.jar");
 });

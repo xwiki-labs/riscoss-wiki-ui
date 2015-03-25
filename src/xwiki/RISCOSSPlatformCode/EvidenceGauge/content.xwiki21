@@ -1,4 +1,5 @@
 {{groovy}}
+/* -*- Mode:Java */
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -10,10 +11,8 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
-import eu.riscoss.reasoner.Evidence;
-
 public class EvidenceGauge extends BufferedImage {
-	
+
 	Color right_color;
 	Color left_color;
 	
@@ -153,6 +152,108 @@ public class EvidenceGauge extends BufferedImage {
 				aa, angleDiff(aa, ad),           // angle start, extent 
 				type );
 	}  
+
+    // Copied from riscoss-analyser to prevent creating an unnecessary dependency.
+    static class Evidence {
+	
+	    double p, m;
+	
+	    public Evidence( double plus, double minus ) {
+		    p = round( plus );
+		    m = round( minus );
+	    }
+	
+	    public Evidence( Distribution d ) {
+		    int count = d.getValues().size();
+		    double value = 0;
+		    for( Double val : d.getValues() ) {
+			    p += val.doubleValue() * value;
+			    value += (1.0 / count);
+		    }
+		    value = 1;
+		    for( Double val : d.getValues() ) {
+			    m += val.doubleValue() * value;
+			    value -= (1.0 / count);
+		    }
+	    }
+	
+	    private double round( double d ) {
+		    return ((double)((int)(d * 10000))) / 10000;
+	    }
+	
+	    public double getPositive() {
+		    return p;
+	    }
+	
+	    public double getNegative() {
+		    return m;
+	    }
+	
+	    public String toString() {
+		    return "[+" + p + "," + "-" + m + "]";
+	    }
+	
+	    public void set( double p, double n ) {
+		    this.p = p;
+		    this.m = n;
+	    }
+
+	    public boolean nonZero() {
+		    return (m != 0) | (p != 0);
+	    }
+
+	    public double getDirection() {
+		    return (p - m);
+	    }
+
+	    public double getConflict() {
+		    return Math.max(p, m) - Math.abs(p - m);
+	    }
+
+	    public double getStrength() {
+		    return Math.abs( p + m - p * m );
+    //		return (p + m) /2;
+	    }
+	
+	    public double getSignal() {
+		    return (1 + getDirection()) /2;
+	    }
+    }
+
+
+    static class Distribution {
+	    List<Double> values = new ArrayList<Double>();
+	
+	    public void setValues( List<Double> v ) {
+		    values.clear();
+		    for( Double d : v )
+			    values.add( d );
+	    }
+	
+	    public List<Double> getValues() {
+		    return values;
+	    }
+	
+	    public String toString() {
+		
+		    String printDist = "[ ";
+		    int size = values.size();
+		    if(size == 0)
+			    return "[ ]";
+		    if(size == 1)
+			    return "[ " + values.get(0) + " ]";
+		    Double[] dblArr = new Double[size];
+		    values.toArray(dblArr);
+		    for (int i = 0; i < size; i++) {
+			    printDist += dblArr[i];
+			    if(i < (size - 1)) {
+				    printDist += ", ";
+			    }
+		    }
+		    printDist += " ]";
+		    return printDist;
+	    }
+    }
 }
 
 int width = 100;
@@ -164,7 +265,7 @@ if(request.positive != null && request.negative != null) {
         height = width / 2;
     }
 
-    EvidenceGauge eg = new EvidenceGauge(new Evidence(Double.parseDouble(request.positive), Double.parseDouble(request.negative)), width, height, Color.red, Color.green);
+    EvidenceGauge eg = new EvidenceGauge(new EvidenceGauge.Evidence(Double.parseDouble(request.positive), Double.parseDouble(request.negative)), width, height, Color.red, Color.green);
 
     response.setContentType("image/png");
     javax.imageio.ImageIO.write(eg, "png", response.getOutputStream());

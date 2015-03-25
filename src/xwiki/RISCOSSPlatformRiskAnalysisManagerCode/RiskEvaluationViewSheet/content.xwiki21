@@ -14,12 +14,11 @@ $xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationViewSheet",
 #if($riskEvaluation.getProperty('result').value == '')
   {{info}}This risk configuration has not yet been evaluated{{/info}}
 #else
-  == Risk Evaluation ==
   (% class="resultData" style="display:none;" %)(((
     $escapetool.url($riskEvaluation.getProperty('result').getValue())
   )))
 
-  == Risk Evaluation Inputs ==
+  == Input Values ==
   (% class="resultInput" style="display:none;" %)(((
     $escapetool.url($riskEvaluation.getProperty('inputData').value)
   )))
@@ -31,18 +30,10 @@ $xwiki.jsx.use("RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationViewSheet",
 ----
 
 #if($hasEdit)
-#set($xredirect = $xwiki.getDocument("RISCOSSPlatformRiskConfigurations.WebHome").getURL())
-{{html clean="false"}}
-    <form action="$xwiki.getURL('RISCOSSPlatformRiskAnalysisManagerCode.Evaluate')" method="POST">
-      <input type="hidden" name="riskAnalysisSession" value="$asDoc.fullName"/>
-      <input type="hidden" name="riskConfiguration" value="$riskConfiguration.fullName"/>
-      <input type="hidden" name="entity" value="$targetEntity.fullName"/>
-      <input type="hidden" name="xredirect" value="$doc.getURL()"/>
-      <div class="buttonwrapper">
-        <a href="$asDoc.getExternalURL("delete", "xredirect=${xredirect}")">Delete Evaluation</a>
-      </div>
-      <!-- <input type="submit" value="Re-Evaluate" class="button"/> -->
-    </form>
-{{/html}}
+| (% class="buttonwrapper" %)(((
+    {{html clean=false}}<a href="$asDoc.getExternalURL('delete', "xredirect=$RiskEvaluationViewSheet_xredirect")">Delete Analysis</a>{{/html}}
+))) | (% class="buttonwrapper" %)(((
+    {{html clean=false}}<a href="$xwiki.getURL('RISCOSSPlatformCode.EvaluateComponentForUseCase', 'view', "riskAnalysisSession=${asDoc.getFullName()}&xredirect=$RiskEvaluationViewSheet_xredirect")">Rerun Analyse</a>{{/html}}
+)))
 #end
 {{/velocity}}

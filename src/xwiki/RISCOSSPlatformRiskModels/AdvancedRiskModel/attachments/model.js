@@ -26,18 +26,28 @@ mkInput("NUMBER", 0, "UseCase:SkillPatch");
 mkInput("NUMBER", 0, "UseCase:SkillLegal");
 mkInput("NUMBER", 0, "UseCase:StrategyNone");
 
-mkInput("NUMBER", 0, "OSSComp:github:repo:stargazers_count");
-mkInput("NUMBER", 0, "OSSComp:github:repo:forks_count");
+mkInput("NUMBER", 0, "OSSComp:github:repo:contributors");
+mkInput("NUMBER", 0, "OSSComp:github:repo:size");
+mkInput("NUMBER", 0, "OSSComp:github:repo:watchers");
 mkInput("NUMBER", 0, "OSSComp:github:repo:open_issues_count");
+mkInput("NUMBER", 0, "OSSComp:github:repo:has_wiki");
+mkInput("NUMBER", 0, "OSSComp:github:repo:stargazers_count");
 mkInput("NUMBER", 0, "OSSComp:github:repo:subscribers_count");
+mkInput("NUMBER", 0, "OSSComp:github:repo:created_at");
+mkInput("NUMBER", 0, "OSSComp:github:repo:license");
+mkInput("NUMBER", 0, "OSSComp:github:repo:updated_at");
+mkInput("NUMBER", 0, "OSSComp:github:repo:forks_count");
+mkInput("NUMBER", 0, "OSSComp:github:repo:closed_issues");
+mkInput("NUMBER", 0, "OSSComp:github:repo:ci_link");
 
 var outputs = module.exports.outputs = { };
 var mkOutput = function (type, def, name) { outputs[name] = { type: type, value: def }; };
+var FAKE_NOTICE = "Totally Fake Risk (model coming soon!)";
 
-mkOutput("NUMBER", 0.5, "Risk");
+mkOutput("NUMBER", 0.5, FAKE_NOTICE);
 
 module.exports.evaluate = function (inputs) {
-    return {
-        Risk: { type: "NUMBER", value: 0 }
-    };
+    var out = {};
+    out[FAKE_NOTICE] = { type: "NUMBER", value: 123 };
+    return out;
 };

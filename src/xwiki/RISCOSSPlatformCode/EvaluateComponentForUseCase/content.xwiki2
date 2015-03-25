@@ -12,10 +12,8 @@
   #set($entity = $request.getParameter('entity'))
   #set($useCase = $request.getParameter('useCase'))
   #set($riskConfiguration = $request.getParameter('riskConfiguration'))
-  #if("$!useCase" == "")
+  #if("$!entity" == "")
     {{error}}Missing "entity" parameter{{/error}}
-  #elseif("$!useCase" == "")
-    {{error}}Missing "useCase" parameter{{/error}}
   #elseif("$!riskConfiguration" == "")
     {{error}}Missing "riskConfiguration" parameter{{/error}}
   #else
@@ -38,6 +36,9 @@
     {{error}}Parameter "riskAnalysisSession" points to nonexistant document{{/error}}
   #else
     #set($ok = true)
+    #set($entity = $API.targetForSession($sessionDoc))
+    #set($useCase = $API.useCaseForSession($sessionDoc))
+    #set($riskConfiguration = $xwiki.getDocument($riskEvaluation.getProperty('riskConfiguration').getValue()))
   #end
 #end
 ##
@@ -75,9 +76,13 @@
 ##
 #if($ok == true)
   #set($entityDoc = $xwiki.getDocument($analyserAPI.targetForSession($sessionDoc)))
-  #set($useCaseDoc = $xwiki.getDocument($useCase))
+  #set($useCaseDocName = "")
+  #if("$!useCase" != "")
+    #set($useCaseDocName = $xwiki.getDocument($useCase).getName())
+  #end
   #set($rdrpath = $analyserAPI.getRDRPath($xwiki))
-  #set($riskData = $analyserAPI.getRiskData2($services, $inputs, $rdrpath, $entityDoc.name, $useCaseDoc.name))
+  #set($riskData =
+    $analyserAPI.getRiskData2($services, $inputs, $rdrpath, $entityDoc.name, $useCaseDocName))
   #set($riskData_output = $riskData.optJSONObject('output'))
   #if ("$!riskData_output" == "" || "$!riskData_output.optJSONArray('errors')" == "")
     #set($ok = false)
@@ -144,14 +149,14 @@
 #end
 ##
 #if($ok == true)
-  #if ($analyserAPI.storeResults($sessionDoc, $result, $riskData, $outRaw, 0, 0) != "ok")
+  #if ($analyserAPI.storeResults($sessionDoc, $result, $riskData, $outRaw) != "ok")
 
     {{error}}
         Failed to store results
     {{/error}}
 
-  #elseif ("$!request.getProperty('xredirect')" != "")
-    $response.sendRedirect($request.getProperty('xredirect'))
+  #elseif ("$!request.getParameter('xredirect')" != "")
+    $response.sendRedirect($request.getParameter('xredirect'))
   #else
     $response.sendRedirect($sessionDoc.getURL())
   #end

@@ -163,6 +163,11 @@ public JSONObject getRiskData2(Object services,
             } else if (name.indexOf("UseCase:") == 0) {
                 name = name.substring(("UseCase:").length());
                 entity = useCaseName;
+                if (useCaseName == null || "".equals(useCaseName)) {
+                    errors.put("Risk model requires data point: " + name +
+                        " which is only available with a configured UseCase");
+                    continue;
+                }
             }
             JSONObject output = inputResult.optJSONObject(fullName);
             if (output == null) { continue; }
@@ -182,6 +187,8 @@ public JSONObject getRiskData2(Object services,
                 if (riskDataArray.length() != 0) {
                     JSONObject riskData = riskDataArray.getJSONObject(0);
                     output.put("value", riskData.get("value"));
+                } else {
+                    warnings.put("No data available for data point " + name);
                 }
             }
             inputResult.put(fullName, output);
@@ -257,6 +264,13 @@ public String targetForSession(Object sessionDoc)
 {
     def riskSessionObj = sessionDoc.getObject(RISK_EVAL_CLS);
     return riskSessionObj.getProperty("entity").getValue();
+}
+
+public String useCaseForSession(Object sessionDoc)
+{
+    def riskSessionObj = sessionDoc.getObject(RISK_EVAL_CLS);
+    def prop = riskSessionObj.getProperty("useCase");
+    return prop ? prop.getValue() : "";
 }
 
 // Copied from DataCollectorGroovy, keep in sync, TODO: fix
@@ -408,7 +422,7 @@ public Object getSessionDoc2(Object xwiki,
     if (targetName.indexOf('.') == -1) {
         riskConfig = "RISCOSSPlatformEntities." + targetName;
     }
-    if (useCaseName.indexOf('.') == -1) {
+    if (useCaseName != null && useCaseName.indexOf('.') == -1) {
         useCaseName = "RISCOSSPlatformEntities." + useCaseName;
     }
 
@@ -416,16 +430,20 @@ public Object getSessionDoc2(Object xwiki,
     if (riskConfDoc.isNew()) { return "ERROR_riskConfig_nonexistant"; }
     def targetDoc = xwiki.getDocument(targetName);
     if (targetDoc.isNew()) { return "ERROR_targetName_nonexistant"; }
-    def useCaseDoc = xwiki.getDocument(useCaseName);
-    if (useCaseDoc.isNew()) { return "ERROR_useCaseName_nonexistant"; }
+    def useCaseDoc = null;
+    if (useCaseName != null) {
+        useCaseDoc = xwiki.getDocument(useCaseName);
+        if (useCaseDoc.isNew()) { return "ERROR_useCaseName_nonexistant"; }
+    }
 
-    def sessionDoc = xwiki.getDocument("RISCOSSPlatformRiskAnalysisSessions",
-        targetName.substring(targetName.lastIndexOf('.')+1) +
-        "_for_" +
-        useCaseName.substring(useCaseName.lastIndexOf('.')+1) +
-        "_evaluatedWith_" +
-        riskConfig.substring(riskConfig.lastIndexOf('.')+1)
-    );
+    String docName = targetName.substring(targetName.lastIndexOf('.')+1);
+    if (useCaseName != null) {
+        docName += "_for_" + useCaseName.substring(useCaseName.lastIndexOf('.')+1);
+    }
+    docName += "_evaluatedWith_" +
+        riskConfig.substring(riskConfig.lastIndexOf('.')+1);
+
+    def sessionDoc = xwiki.getDocument("RISCOSSPlatformRiskAnalysisSessions", docName);
     if (sessionDoc.isNew()) {
         if (!create) { return "no_such_session"; }
         sessionDoc.setTitle("Analysis of " + targetDoc.getTitle() + " using " +
@@ -433,7 +451,9 @@ public Object getSessionDoc2(Object xwiki,
         def riskEvalObj = sessionDoc.getObject(RISK_EVAL_CLS, true);
         riskEvalObj.set("riskConfiguration", riskConfDoc.getFullName());
         riskEvalObj.set("entity", targetDoc.getFullName());
-        riskEvalObj.set("useCase", useCaseDoc.getFullName());
+        if (useCaseDoc != null) {
+            riskEvalObj.set("useCase", useCaseDoc.getFullName());
+        }
         sessionDoc.saveWithProgrammingRights("Created new risk analysis session");
     }
     return sessionDoc;
@@ -442,19 +462,14 @@ public Object getSessionDoc2(Object xwiki,
 public String storeResults(Object sessionDoc,
                            JSONObject results,
                            JSONObject inputs,
-                           JSONObject raw,
-                           Object interpreted,
-                           long now)
+                           JSONObject raw)
 {
-    if (now < 1) {
-        now = System.currentTimeMillis();
-    }
+    long now = System.currentTimeMillis();
     if (sessionDoc.isNew()) { throw new RuntimeException(); }
     def riskEvalObj = sessionDoc.getObject(RISK_EVAL_CLS, false);
     riskEvalObj.set("inputData", inputs ? inputs.toString() : "");
     riskEvalObj.set("result", results ? results.toString() : "");
     riskEvalObj.set("rawOutput", raw ? raw.toString() : "");
-    riskEvalObj.set("interpretedInput", interpreted ? interpreted.toString() : "");
     riskEvalObj.set("timeLastRun", now);
     sessionDoc.saveWithProgrammingRights("Saved results to risk analysis session");
     return "ok";

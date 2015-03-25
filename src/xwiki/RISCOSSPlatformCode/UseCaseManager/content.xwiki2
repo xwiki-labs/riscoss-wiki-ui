@@ -6,9 +6,10 @@
 #set($columnsProperties = {
     'entity' : { 'type' : 'text', 'link' : 'field', 'sortable' : 'true', 'filterable' : 'true'}
 })
-#set($callPage = $xwiki.getURL('RISCOSSPlatformCode.EvaluateComponentForUseCase',
-                               'view',
-                               "useCase=${doc.fullName}&riskConfiguration=RISCOSSPlatformRiskConfigurations.StandardRiskConfiguration&entity="))
+#set($params = "useCase=${doc.fullName}&" +
+    "riskConfiguration=RISCOSSPlatformRiskConfigurations.AdvancedRiskConfiguration&" +
+    "entity=")
+#set($callPage = $xwiki.getURL('RISCOSSPlatformCode.EvaluateComponentForUseCase', 'view', $params))
 #set($options = {
    'resultPage' : 'RISCOSSPlatformLayerManagerCode.EntitiesLiveTableResults',
    'rowCount' : 10,
@@ -24,5 +25,5 @@
 == Data Collected about this Use Case ==
 
 (% id="collected-data" data-id="${doc.name}" %)((( )))
-$xwiki.jsx.use("RISCOSSPlatformCode.DisplayCollectedData")
+{{include reference="RISCOSSPlatformCode.DisplayCollectedData" /}}
 {{/velocity}}

@@ -1,5 +1,5 @@
 XWikiObj(function (obj) {
-    obj.setDescription("Basic one-size-fits-all risk model for evaluating OSS Components");
+    obj.setDescription("Model for evaluating OSS Components in terms of Use Cases");
     obj.setRiskModelData("model.js");
     obj.setAnalyser("RISCOSSPlatformAnalysers.NodeAnalyser");
 });

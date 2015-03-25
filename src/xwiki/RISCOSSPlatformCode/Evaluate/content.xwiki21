@@ -64,8 +64,8 @@
   #set($entityDoc = $xwiki.getDocument($analyserAPI.targetForSession($sessionDoc)))
   #set($riskData =
     $analyserAPI.getRiskData($services, $inputs, $analyserAPI.getRDRPath($xwiki), $entityDoc.name))
-  #set($errout = $riskData.getJSONArray("errors"))
-  #if($errout.length() > 0)
+  #set($errout = $riskData.optJSONArray("errors"))
+  #if("$!errout" == "" || $errout.length() > 0)
     #set($ok = false)
     {{error}}
       Failed to data from RDR
@@ -74,6 +74,9 @@
         {{code language=none}}$err{{/code}}
 
       #end
+
+      RAWOUT: {{code language=none}}$riskData{{/code}}
+
     {{/error}}
   #end
 #end

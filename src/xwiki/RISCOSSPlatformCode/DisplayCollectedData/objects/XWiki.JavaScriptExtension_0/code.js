@@ -19,10 +19,12 @@ require(['jquery'], function ($) {
     $th = appendElem($headerTr, 'th');
     $th.text("Collected Value");
 
+    input.sort(function (a, b) { return (a.date > b.date) ? 1 : -1; });
+    var seen = [];
     for (var i = 0; i < input.length; i++) {
       var entry = input[i];
-      // hax
-      if (entry.description === 'unused') { continue; }
+      if (seen.indexOf(entry.id) !== -1) { continue; }
+      seen.push(entry.id);
 
       var $tr = appendElem($tbody, 'tr');
       var $td = appendElem($tr, 'td');
@@ -36,8 +38,13 @@ require(['jquery'], function ($) {
       }
     }
   };
-
-  var url = window.location.href.replace(/riscoss\/.*$/,'') + 'riscoss-rdr/' + XWiki.currentPage + '?limit=-1'
+/* TODO: this triggers a cross domain error.
+  var url = decodeURIComponent($('.DisplayDataCollector').attr("data-rdrpath"));
+  url = url.replace(/^ \| $/g, '');
+  url = url.replace('localhost', window.location.hostname);
+  url = url + '/' + $('#collected-data').attr("data-id") + '?limit=-1';
+*/
+  var url = window.location.href.replace(/riscoss\/.*$/,'') + 'riscoss-rdr/' + $('#collected-data').attr("data-id") + '?limit=-1'
   $.ajax(url, {
       success: function (ret) {
           showInput($('#collected-data'), ret.results);

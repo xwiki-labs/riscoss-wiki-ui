@@ -1,0 +1,35 @@
+{{velocity}}
+## -*- Mode:Velocity
+#if("$!request.getParameter('collector')" != "" &&
+    "$!request.getParameter('entityDoc')" != "")
+##
+  #set($dc = $!request.getParameter('collector'))
+  #set($dn = $!request.getParameter('entityDoc'))
+  #set($d = $xwiki.getDocument($dn))
+  ##
+  #set($rmobj = '')
+  #foreach($obj in $d.getObjects('RISCOSSPlatformDataCollectorCode.DataCollectorScheduler'))
+    #if("$!obj.getProperty('collectorName').getValue()" == $dc)
+        #set($schedule = $obj)
+    #end
+  #end
+  #set($collector = $d.getObject($dc))
+  ##
+  #if ($!request.getParameter('action') == "remove")
+    #if("$!rmobj" == "" || !$d.removeObject($rmobj))
+      NO_SUCH_SCHEDULE
+    #end
+    #if("$!rmobj" == "" || !$d.removeObject($rmobj))
+      NO_SUCH_COLLECTOR
+    #end
+    $d.save("Removed DataCollector ${dc}")
+  #elseif ($!request.getParameter('action') == "rerun")
+    $schedule.set('timeLastRun', '')
+    $d.save("$xcontext.getUser() re-ran DataCollector ${dc}")
+    OK
+  #end
+  ##
+#else
+{{info}}This document contains code to manipulate data collectors.{{/info}}
+#end
+{{/velocity}}

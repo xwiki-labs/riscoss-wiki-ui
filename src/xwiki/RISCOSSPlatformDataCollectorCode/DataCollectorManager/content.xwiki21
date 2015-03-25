@@ -1,10 +1,17 @@
-{{velocity output="false"}}##
+{{velocity output="false"}}
 ## -*- Mode:Velocity
 ## Data Collector Configuration.
 ##
+#set($EVAL_GROOVY_PG  = "RISCOSSPlatformRiskAnalysisManagerCode.EvaluateGroovy")
+#set($THIS_SCRIPT_PG  = "RISCOSSPlatformDataCollectorCode.DataCollectorManager")
+#set($AJAX_PG         = "RISCOSSPlatformDataCollectorCode.DataCollectorManagerAjax")
+#set($SCHEDULER_PG    = "RISCOSSPlatformDataCollectorCode.DataCollectorScheduler")
+#set($DATA_COL_CLS_PG = "RISCOSSPlatformDataCollectorCode.DataCollectorClass")
+#set($ENTITY_CLS_PG   = "RISCOSSPlatformLayerManagerCode.EntityClass")
 
 ## Load the jsx which this code will send data to.
-$xwiki.jsx.use('RISCOSSPlatformDataCollectorCode.DataCollectorManager', {"minify":"false"})
+$xwiki.jsx.use($THIS_SCRIPT_PG, {"minify":"false"})
+#set ($analyserAPI = $xwiki.parseGroovyFromPage($EVAL_GROOVY_PG))
 
 ## The final output
 #set ($outConf = {})
@@ -16,32 +23,34 @@ $xwiki.jsx.use('RISCOSSPlatformDataCollectorCode.DataCollectorManager', {"minify
 #end
 
 ## URL for removing objects, used by the jsx
-#set ($removeDC = 'RISCOSSPlatformDataCollectorCode.RemoveDataCollector')
-$outConf.put("objRemoveURL", $xwiki.getURL($removeDC, 'get', "docName=$entityDoc.getFullName()"))
+$outConf.put("ajaxURL", $xwiki.getURL($AJAX_PG, 'get'))
+$outConf.put("displayURL", $xwiki.getURL($THIS_SCRIPT_PG, 'get'))
+$outConf.put("entityDoc", $entityDoc.getFullName())
+$outConf.put("canEdit", $xwiki.hasAccessLevel('edit', $xcontext.getUser(), $entityDoc))
 
 ## List of data collectors
 #set ($collectors = [])
 $outConf.put("collectors", $collectors)
 
-#set ($schedulesList = $entityDoc.getObjects("RISCOSSPlatformDataCollectorCode.DataCollectorScheduler"))
-#set ($schedulesMap = {})
-#foreach ($s in $schedulesList)
-  #if ("$!s.getProperty('collectorName')" != "")
+#set($schedulesList = $entityDoc.getObjects($SCHEDULER_PG))
+#set($schedulesMap = {})
+#foreach($s in $schedulesList)
+  #if("$!s.getProperty('collectorName')" != "")
     $schedulesMap.put($s.getProperty("collectorName").getValue(), $s)
   #end
 #end
 
-#set ($entityObj = $entityDoc.getObject("RISCOSSPlatformLayerManagerCode.EntityClass"))
-#set ($layer = $entityObj.getProperty("layer").getValue())
+#set($entityObj = $entityDoc.getObject($ENTITY_CLS_PG))
+#set($layer = $entityObj.getProperty("layer").getValue())
 
-#set ($collectorDocNames =
-  $services.query.xwql(
-    'from doc.object(RISCOSSPlatformDataCollectorCode.DataCollectorClass) as x where x.layer = :layer').bindValue("layer", $layer).execute())
+#set($collectorDocNames =
+  $services.query.xwql("from doc.object($DATA_COL_CLS_PG) as x where x.layer = :layer").bindValue("layer", $layer).execute())
+#set($autoEnableDataCollectors = "$!request.getParameter('autoEnableDataCollectors')")
 #foreach($collectorName in $collectorDocNames)
-  #set ($collectorOut = {})
+  #set($collectorOut = {})
   $collectors.add($collectorOut)
-  #set ($col = $xwiki.getDocument($collectorName))
-  #set ($cobj = $entityDoc.getObject($collectorName))
+  #set($col = $xwiki.getDocument($collectorName))
+  #set($cobj = $entityDoc.getObject($collectorName))
 
   $collectorOut.put("title", $col.getTitle())
   $collectorOut.put("fullName", $col.getFullName())
@@ -49,7 +58,10 @@ $outConf.put("collectors", $collectors)
   #set($schedule = $schedulesMap.get($col.getFullName()))
   #if ("$!schedule" == "")
     ## We're not going to save this object at the moment, just make it ready to save later...
-    #set($schedule = $entityDoc.newObject("RISCOSSPlatformDataCollectorCode.DataCollectorScheduler"))
+    #set($schedule = $entityDoc.newObject($SCHEDULER_PG))
+    #if($autoEnableDataCollectors.indexOf($col.getFullName()))
+      $collectorOut.put('enabled', 'true')
+    #end
   #else
     $collectorOut.put('enabled', 'true')
   #end

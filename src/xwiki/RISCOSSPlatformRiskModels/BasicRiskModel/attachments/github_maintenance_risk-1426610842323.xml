@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="ISO-8859-1"?><riscoss>
+    <model>
+        <relationships>
+            <satisfy weight="0.2" source="fuzzified:OSSComp:github:repo:has_wiki" target="documentation-unavailable" function="fx.join.avg(sources)"/>
+            <satisfy source="fuzzified:OSSComp:github:repo:ci_link" target="CI-not-available"/>
+            <satisfy source="fuzzified:i:low_popularity" target="repository-not-popular" function="fx.join.or(sources)"/>
+            <satisfy source="documentation-unavailable,high-open-closed-issues-ratio,inactive-repository,license-unavailable,repository-not-popular" target="unmaintained-repository" function="fx.join.avg(sources)"/>
+            <satisfy source="fuzzified:OSSComp:github:repo:license" target="license-unavailable"/>
+            <satisfy source="fuzzified:i:low_forks_count" target="inactive-repository"/>
+            <satisfy source="fuzzified:OSSComp:github:repo:size" target="large-repository"/>
+            <expose source="unmaintained-repository" target="Obsolescence Risk"/>
+            <expose source="Analysability Risk,Bug Risk,Obsolescence Risk" target="Maintenance Risk" function="fx.join.or(sources)"/>
+            <expose source="CI-not-available,high-open-closed-issues-ratio,large-repository,young-repository" target="Bug Risk" function="fx.join.avg(sources)"/>
+            <expose source="documentation-unavailable,large-repository" target="Analysability Risk" function="fx.join.or(sources)"/>
+            <indicate source="OSSComp:github:repo:closed_issues" target="fuzzified:OSSComp:github:repo:closed_issues"/>
+            <indicate source="OSSComp:github:repo:size" target="fuzzified:OSSComp:github:repo:size" function="fx.join.avg(fx.transform.asynt(sources,1000))"/>
+            <indicate source="OSSComp:github:repo:license" target="fuzzified:OSSComp:github:repo:license" function="zeroes( sources )"/>
+            <indicate source="OSSComp:github:repo:updated_at" target="fuzzified:OSSComp:github:repo:updated_at"/>
+            <indicate source="OSSComp:github:repo:has_wiki" target="fuzzified:OSSComp:github:repo:has_wiki" function="zeroes( sources )"/>
+            <indicate source="OSSComp:github:repo:ci_link" target="fuzzified:OSSComp:github:repo:ci_link" function="zeroes( sources )"/>
+            <indicate source="OSSComp:github:repo:open_issues_count" target="fuzzified:OSSComp:github:repo:open_issues_count"/>
+            <indicate source="i:low_forks_count" target="fuzzified:i:low_forks_count" function="fx.join.avg(fx.transform.tanh(sources))"/>
+            <indicate source="i:low_popularity" target="fuzzified:i:low_popularity" function="fx.join.avg(fx.transform.tanh(sources,1))"/>
+            <indicate source="OSSComp:github:repo:created_at" target="fuzzified:OSSComp:github:repo:created_at"/>
+        </relationships>
+        <entities>
+            <indicator id="OSSComp:github:repo:size">
+                <property name="input" value="true"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="OSSComp:github:repo:ci_link">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="OSSComp:github:repo:license">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="OSSComp:github:repo:watchers">
+                <property name="input" value="true"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="OSSComp:github:repo:stargazers_count">
+                <property name="input" value="true"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="OSSComp:github:repo:contributors">
+                <property name="input" value="true"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="OSSComp:github:repo:subscribers_count">
+                <property name="input" value="true"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="OSSComp:github:repo:has_wiki">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="OSSComp:github:repo:updated_at">
+                <property name="input" value="true"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="OSSComp:github:repo:forks_count">
+                <property name="input" value="true"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="OSSComp:github:repo:open_issues_count">
+                <property name="input" value="true"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="OSSComp:github:repo:closed_issues">
+                <property name="input" value="true"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="OSSComp:github:repo:created_at">
+                <property name="input" value="true"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="i:low_popularity">
+                <property name="input" value="false"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="i:low_forks_count">
+                <property name="input" value="false"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="i:inactivity">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <event id="Maintenance Risk">
+                <property name="output" value="true"/>
+            </event>
+            <event id="Bug Risk">
+                <property name="output" value="true"/>
+            </event>
+            <event id="Obsolescence Risk">
+                <property name="output" value="true"/>
+            </event>
+            <event id="Analysability Risk">
+                <property name="output" value="true"/>
+            </event>
+            <situation id="unmaintained-repository"/>
+            <situation id="large-repository"/>
+            <situation id="CI-not-available"/>
+            <situation id="license-unavailable"/>
+            <situation id="repository-not-popular"/>
+            <situation id="documentation-unavailable"/>
+            <situation id="inactive-repository"/>
+            <situation id="high-open-closed-issues-ratio"/>
+            <situation id="young-repository"/>
+            <situation id="fuzzified:OSSComp:github:repo:ci_link"/>
+            <situation id="fuzzified:OSSComp:github:repo:size"/>
+            <situation id="fuzzified:OSSComp:github:repo:license"/>
+            <situation id="fuzzified:OSSComp:github:repo:has_wiki"/>
+            <situation id="fuzzified:OSSComp:github:repo:updated_at"/>
+            <situation id="fuzzified:OSSComp:github:repo:open_issues_count"/>
+            <situation id="fuzzified:OSSComp:github:repo:closed_issues"/>
+            <situation id="fuzzified:OSSComp:github:repo:created_at"/>
+            <situation id="fuzzified:i:low_popularity"/>
+            <situation id="fuzzified:i:low_forks_count"/>
+        </entities>
+    </model>
+    <script><![CDATA[function zeroes( sources ) {
+  for( i = 0; i < sources.size(); i++ ) {
+    if( sources.get( i ).getPositive() > 0 ) return fx.e( 0, 0 );
+  }
+  return fx.e( 1, 0 );
+}
+
+function inverse( sources ) {
+  if( sources.size() < 1 ) return fx.e( 0, 0 );
+  return fx.e( 1 - sources.get(0).getPositive(), 0 );
+}
+
+var watchers = program.getScenario().getConstraint( "OSSComp:github:repo:watchers", "st" );
+var stargazers_count = program.getScenario().getConstraint( "OSSComp:github:repo:stargazers_count", "st" );
+var contributors = program.getScenario().getConstraint( "OSSComp:github:repo:contributors", "st" );
+var subscribers_count = program.getScenario().getConstraint( "OSSComp:github:repo:subscribers_count", "st" );
+var forks = program.getScenario().getConstraint( "OSSComp:github:repo:forks_count", "st" );
+
+var low_pop = Number(watchers) + Number(stargazers_count) + Number(contributors) + Number(subscribers_count);
+low_pop = low_pop /4;
+
+//println( low_pop );
+
+//program.getScenario().setConstraint( "i:low_popularity", "st", low_pop );
+program.getScenario().setConstraint( "i:low_popularity", "st", 1 - fx.asynt2( Number(low_pop), 10 ) );
+program.getScenario().setConstraint( "i:low_forks_count", "st", 1 - fx.asynt2( Number(forks), 10 ) );
+
+ptr( "i:low_popularity" );
+ptr( "i:low_forks_count" );
+
+function ptr( name ) {
+  println( name + ": " + program.getScenario().getConstraint( name, "st" ) );
+}]]></script>
+</riscoss>

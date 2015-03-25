@@ -1,1 +1,12 @@
-{{info}}This document contains a Javascript Extension for displaying data from the RDR{{/info}}
+{{velocity}}
+## -*- Mode:Velocity
+#if ($doc.getFullName() == "RISCOSSPlatformCode.DisplayCollectedData")
+  {{info}}This document contains a Javascript Extension for displaying data from the RDR{{/info}}
+#else
+  #set($confDoc = $xwiki.getDocument("RISCOSSPlatformCode.RISCOSSConfiguration"))
+  #set($superConf = $confDoc.getObject("RISCOSSPlatformCode.RISCOSSConfiguration"))
+  #set($rdrPath = $superConf.getProperty("rdr").getValue())
+  $xwiki.jsx.use("RISCOSSPlatformCode.DisplayCollectedData")
+  (% style="display:none" class="DisplayDataCollector" data-rdrpath="$escapetool.url($rdrPath)" %)((()))
+#end
+{{/velocity}}

@@ -4,7 +4,7 @@ XClass(function (xcl, XWiki) {
     "customDisplay": "",
     "editor": "---",
     "picker": "0",
-    "prettyName": "inputData",
+    "prettyName": "Engine Input Data",
     "rows": "5",
     "size": "40",
     "validationMessage": "",
@@ -14,7 +14,7 @@ XClass(function (xcl, XWiki) {
     "customDisplay": "",
     "editor": "---",
     "picker": "0",
-    "prettyName": "result",
+    "prettyName": "Engine Result",
     "rows": "5",
     "size": "40",
     "validationMessage": "",
@@ -24,7 +24,7 @@ XClass(function (xcl, XWiki) {
     "customDisplay": "",
     "editor": "---",
     "picker": "0",
-    "prettyName": "Raw Output",
+    "prettyName": "Engine Raw Output",
     "rows": "5",
     "size": "40",
     "validationMessage": "",
@@ -47,7 +47,7 @@ XClass(function (xcl, XWiki) {
   xcl.addProp("riskConfiguration", props.XString.create({
     "customDisplay": "",
     "picker": "0",
-    "prettyName": "riskConfiguration",
+    "prettyName": "Risk Configuration (models)",
     "size": "30",
     "validationMessage": "",
     "validationRegExp": ""
@@ -55,7 +55,15 @@ XClass(function (xcl, XWiki) {
   xcl.addProp("entity", props.XString.create({
     "customDisplay": "",
     "picker": "0",
-    "prettyName": "riskConfiguration",
+    "prettyName": "Entity",
+    "size": "30",
+    "validationMessage": "",
+    "validationRegExp": ""
+  }));
+  xcl.addProp("useCase", props.XString.create({
+    "customDisplay": "",
+    "picker": "0",
+    "prettyName": "Use Case",
     "size": "30",
     "validationMessage": "",
     "validationRegExp": ""

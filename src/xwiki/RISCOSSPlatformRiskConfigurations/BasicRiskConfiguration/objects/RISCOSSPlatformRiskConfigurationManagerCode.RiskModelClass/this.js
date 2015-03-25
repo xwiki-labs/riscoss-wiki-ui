@@ -1,4 +1,4 @@
 XWikiObj(function (obj) {
     obj.setLayer("RISCOSSPlatformLayers.OSSComponent");
-    obj.setRiskModel("RISCOSSPlatformRiskModels.StandardRiskModel");
+    obj.setRiskModel("RISCOSSPlatformRiskModels.BasicRiskModel");
 });

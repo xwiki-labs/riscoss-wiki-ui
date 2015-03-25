@@ -25,6 +25,7 @@
 == Create Project from Github ==
 {{html clean="false"}}
 <form action="$xwiki.getURL('RISCOSSPlatformCode.CreateFromGithub')" method="POST" class="xform third createForm">
+    <input type="hidden" name="autoEnableDataCollectors" value="['RISCOSSPlatformRiskDataCollectors.GitHub']" />
     <dl>
       <dt>
         <label for="githubRepo">

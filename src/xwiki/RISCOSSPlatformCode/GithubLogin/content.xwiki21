@@ -1,0 +1,27 @@
+{{velocity}}
+
+#if("$!request.getParameter('xpage')" != "" && $request.getParameter('xpage').equals("plain") && "$!request.getParameter('outputSyntax')" != "" && $request.getParameter('outputSyntax').equals("plain"))
+
+#set($rep = $xwiki.createUser(true))
+#set($loginURL = "")
+#if($rep >= 0 || $rep == -3) ## User created with success or the user already exists
+#set($rep = 1)
+## Get the login URL for the connected user
+#set($username = $request.getParameter("xwikiname"))
+#set($userDoc = $xwiki.getDocument("XWiki.${username}"))
+#set($userObj = $userDoc.getObject("XWiki.XWikiUsers"))
+#set($password = $request.getParameter("register_password"))
+#set($discard = $userObj.set("password",$password))
+#set($discard = $userDoc.saveAsAuthor())
+#set($loginURL = $xwiki.getURL("XWiki.XWikiLogin","loginsubmit","j_username=${username}&j_password=${password}&form_token=${services.csrf.getToken()}"))
+#set($data = {"j_username" : "$username", "j_password" : "$password", "form_token" : "${services.csrf.getToken()}"})
+#else ## Error
+##ToDo
+#set($rep = -1)
+#end
+
+{"rep" : "$!rep","loginURL" : "$!loginURL","data" : "$data"}
+
+#end
+
+{{/velocity}}

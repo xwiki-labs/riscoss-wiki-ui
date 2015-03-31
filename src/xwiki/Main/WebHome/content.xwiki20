@@ -10,6 +10,11 @@ normal usage.
 {{/html}}
 
 {{velocity}}
+## JS/CSS of the Github login functionality
+#if($isGuest)
+#set($discard = $xwiki.jsx.use("RISCOSSPlatformCode.GithubLogin"))
+#set($discard = $xwiki.ssx.use("RISCOSSPlatformCode.GithubLogin"))
+#end
 #if ($hasAdmin)
 {{include reference="RISCOSSPlatformCode.AdminPage" /}}
 ##

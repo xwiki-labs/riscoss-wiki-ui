@@ -9,6 +9,7 @@
   : $doc.display($prop.getName())
 #end
 
+#if($layer != "RISCOSSPlatformLayers.UseCase")
 ----
 
 = Basic Risk Analysis =
@@ -35,9 +36,9 @@ A basic risk analysis is an analysis of a project without any context informatio
     "xredirect=${doc.getURL()}"
 )
 #set($runAnalysis = $xwiki.getURL('RISCOSSPlatformCode.EvaluateComponentForUseCase', 'view', $analysisArgs))
-
 #if($foundEval == false)
     (% class="buttonwrapper" %)((( {{html clean=false}}<a href="$runAnalysis">Run Simple Analysis</a>{{/html}} )))
+#end
 #end
 
 #if ($hasEdit && $layer != "RISCOSSPlatformLayers.UseCase")
@@ -52,7 +53,7 @@ A basic risk analysis is an analysis of a project without any context informatio
     == Collected data about this project ==
 
     (% id="collected-data" data-id="${doc.name}" %)((( )))
-    $xwiki.jsx.use("RISCOSSPlatformCode.DisplayCollectedData")
+    {{include reference="RISCOSSPlatformCode.DisplayCollectedData" /}}
 #end
 
 #set($xredirect = $xwiki.getDocument("Main.WebHome").getURL())

@@ -9,7 +9,6 @@
   : $doc.display($prop.getName())
 #end
 
-#if ($layer != "RISCOSSPlatformLayers.UseCase")
 ----
 
 = Basic Risk Analysis =
@@ -36,9 +35,9 @@ A basic risk analysis is an analysis of a project without any context informatio
     "xredirect=${doc.getURL()}"
 )
 #set($runAnalysis = $xwiki.getURL('RISCOSSPlatformCode.EvaluateComponentForUseCase', 'view', $analysisArgs))
+
 #if($foundEval == false)
     (% class="buttonwrapper" %)((( {{html clean=false}}<a href="$runAnalysis">Run Simple Analysis</a>{{/html}} )))
-#end
 #end
 
 #if ($hasEdit && $layer != "RISCOSSPlatformLayers.UseCase")
@@ -53,11 +52,20 @@ A basic risk analysis is an analysis of a project without any context informatio
     == Collected data about this project ==
 
     (% id="collected-data" data-id="${doc.name}" %)((( )))
-    {{include reference="RISCOSSPlatformCode.DisplayCollectedData" /}}
+    $xwiki.jsx.use("RISCOSSPlatformCode.DisplayCollectedData")
 #end
 
 #set($xredirect = $xwiki.getDocument("Main.WebHome").getURL())
-(% class="buttonwrapper" %)(((
-    [[Edit entity>>$doc.getExternalURL("edit")]] | [[Delete entity>>$doc.getExternalURL("delete", "xredirect=${xredirect}")]]
-)))
+#set($deleteEntityURL = $xwiki.getURL("RISCOSSPlatformLayerManagerCode.DeleteEntity","view","entity=${doc.getFullName()}"))
+{{html wiki="false"}}
+<div class="buttonwrapper">
+<span class="wikiexternallink">
+<a href="$doc.getExternalURL('edit')">Edit entity</a>
+</span> | 
+<span class="wikiexternallink">
+<a href="$deleteEntityURL">Delete entity</a>
+</span>
+</div>
+{{/html}}
+
 {{/velocity}}

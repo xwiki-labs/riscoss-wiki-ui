@@ -1,0 +1,49 @@
+{{velocity}}
+## Delete entity and associated risk analysis sessions
+
+#set($redirectURL = $xwiki.getDocument("Main.WebHome").getURL())
+#if("$!request.getParameter('entity')" != "")
+   #set($entityDocRef = $request.getParameter('entity'))
+   #if($xwiki.exists($entityDocRef))
+      #if("$!request.getParameter('confirm')" != "" && $request.getParameter('confirm') == "1" && $services.csrf.isTokenValid($request.getParameter('form_token')))
+         ## Deletion confirmed
+         ## Get associated sessions
+         #set($query = "from doc.object(RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass) as session where session.entity='${entityDocRef}'")
+         #set($riskAnlysisSessions = $services.query.xwql($query).execute())
+         ## Delete entity
+         #set($discard = $xwiki.getDocument($entityDocRef).delete())
+         ## Delete sessions     
+         #foreach($session in $riskAnlysisSessions)
+            #set($discard = $xwiki.getDocument($session).delete())
+         #end
+         ## Rediect to the home page
+         $response.sendRedirect($redirectURL)
+      #else
+         ## Show the confirmation form
+         #set($cancelURL = $xwiki.getDocument($entityDocRef).getURL())
+         {{html clean="false"}}
+            #set($fullmsg = $services.localization.render('core.recyclebin.confirm'))
+            #xwikimessageboxstart($services.localization.render('core.delete') $fullmsg)
+            <form action="$doc.getURL("view", "entity=$entityDocRef")" method="post">
+               <div class="hidden">
+                  <input type="hidden" name="form_token" value="$!{services.csrf.getToken()}" />
+                  <input type="hidden" name="confirm" value="1"/>
+               </div>
+               <div class="buttonwrapper"><input type="submit" class="button" value="$services.localization.render('yes')"/></div>
+                  <div class="buttonwrapper">
+                     <a class="secondary button" href="$!{escapetool.xml(${cancelURL})}">$services.localization.render('no')</a>
+                  </div>
+            </form>
+            #xwikimessageboxend()
+         {{/html}}         
+      #end
+    #else
+       ## The document do not exists then redirect
+       $response.sendRedirect($redirectURL)       
+    #end
+#else
+  ## Rediect to the home page
+  $response.sendRedirect($redirectURL)
+ddd
+#end
+{{/velocity}}

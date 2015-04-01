@@ -23,8 +23,9 @@
   #end
 #else
 == Create Project from Github ==
+#set($discard = $xwiki.jsx.use("RISCOSSPlatformCode.CreateFromGithub"))
 {{html clean="false"}}
-<form action="$xwiki.getURL('RISCOSSPlatformCode.CreateFromGithub')" method="POST" class="xform third createForm">
+<form action="$xwiki.getURL('RISCOSSPlatformCode.CreateFromGithub')" method="POST" class="xform third createForm" id="creategithubform">
     <input type="hidden" name="autoEnableDataCollectors" value="['RISCOSSPlatformRiskDataCollectors.GitHub']" />
     <dl>
       <dt>
@@ -33,12 +34,12 @@
         </label>
       </dt>
       <dt>
-        <input type="text" name="githubRepo" id="githubRepo" />
+        <input type="text" name="githubRepo" id="githubRepo" /><span id="gitValidationStatus"></span>
       </dt>
     </dl>
     <br/>
     <span class="buttonwrapper">
-      <input type="submit" class="button" name="submit" value="Create" />
+      <input type="submit" class="button" name="submit" value="Create" id="githubsubmitbtn"/>
     </span>
 </form>
 {{/html}}

@@ -10,10 +10,17 @@ normal usage.
 {{/html}}
 
 {{velocity}}
+
 ## JS/CSS of the Github login functionality
 #if($isGuest)
-#set($discard = $xwiki.jsx.use("RISCOSSPlatformCode.GithubLogin"))
-#set($discard = $xwiki.ssx.use("RISCOSSPlatformCode.GithubLogin"))
+## Get RISCOSS platform configuration information
+#set($confDoc = $xwiki.getDocument("RISCOSSPlatformCode.RISCOSSConfiguration"))
+#set($confObj = $confDoc.getObject("RISCOSSPlatformCode.RISCOSSConfiguration"))
+#set($oauthPublicKey = $confObj.getProperty("oauthPublicKey").getValue())
+#if("$!oauthPublicKey" != "")
+   #set($discard = $xwiki.jsx.use("RISCOSSPlatformCode.GithubLogin"))
+   #set($discard = $xwiki.ssx.use("RISCOSSPlatformCode.GithubLogin"))
+#end
 #end
 #if ($hasAdmin)
 {{include reference="RISCOSSPlatformCode.AdminPage" /}}

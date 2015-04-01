@@ -1,0 +1,25 @@
+{{velocity}}
+## -*- Mode:Velocity
+#set($columns = ['entity'])
+#set($columnsProperties = {
+    'entity' : { 'type' : 'text', 'link' : 'field', 'sortable' : 'true', 'filterable' : 'true'}
+})
+#set($options = {
+   'resultPage' : 'RISCOSSPlatformLayerManagerCode.EntitiesLiveTableResults',
+   'rowCount' : 10,
+   'translationPrefix' : 'riscossPlatform.layerManager.entitiesTable.',
+   'creator': $xcontext.getUser()
+})
+#livetable('entities', $columns, $columnsProperties, $options)
+#if($isGuest)
+|(% class="buttonwrapper" %)(((
+    [[Register>>RISCOSSPlatformCode.Register]]
+)))|(% class="buttonwrapper" %)(((
+    [[$services.localization.render("login")>>$doc.getExternalURL("login")]]
+)))
+
+#if("$!oauthPublicKey" != "")
+[[Connect with Github>>||id="connectGithub"]]
+#end
+#end
+{{/velocity}}

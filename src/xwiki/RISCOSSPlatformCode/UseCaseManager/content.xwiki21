@@ -1,6 +1,5 @@
 {{velocity}}
 ## -*- Mode:Velocity
-#if ($hasEdit)
 == Evaluate OSS Component for this Use Case ==
 #set($columns = ['entity'])
 #set($columnsProperties = {
@@ -17,8 +16,6 @@
    'extraParams': "layer=RISCOSSPlatformLayers.OSSComponent&callPage=$escapetool.url($callPage)"
 })
 #livetable('entities', $columns, $columnsProperties, $options)
-
-#end
 ##
 ##
 

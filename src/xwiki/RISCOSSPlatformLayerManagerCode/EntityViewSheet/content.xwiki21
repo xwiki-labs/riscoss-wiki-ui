@@ -55,10 +55,10 @@ A basic risk analysis is an analysis of a project without any context informatio
     (% id="collected-data" data-id="${doc.name}" %)((( )))
     {{include reference="RISCOSSPlatformCode.DisplayCollectedData" /}}
 #end
-
+#if($hasEdit)
 #set($xredirect = $xwiki.getDocument("Main.WebHome").getURL())
 #set($deleteEntityURL = $xwiki.getURL("RISCOSSPlatformLayerManagerCode.DeleteEntity","view","entity=${doc.getFullName()}"))
-{{html wiki="false"}}
+{{html clean="false"}}
 <div class="buttonwrapper">
 <span class="wikiexternallink">
 <a href="$doc.getExternalURL('edit')">Edit entity</a>
@@ -68,5 +68,5 @@ A basic risk analysis is an analysis of a project without any context informatio
 </span>
 </div>
 {{/html}}
-
+#end
 {{/velocity}}

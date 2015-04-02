@@ -1,5 +1,17 @@
 XClass(function (xcl, XWiki) {
   var props = XWiki.model.properties;
+  xcl.setCustomClass("");
+  xcl.setCustomMapping("");
+  xcl.setDefaultViewSheet("");
+  xcl.setDefaultEditSheet("");
+  xcl.setDefaultWeb("");
+  xcl.setNameField("");
+  xcl.setValidationScript("");
+  xcl.addProp("content", props.TextArea.create({
+    "prettyName": "Extension Content",
+    "rows": "10",
+    "size": "40"
+  }));
   xcl.addProp("extensionPointId", props.XString.create({
     "prettyName": "Extension Point ID",
     "size": "30"
@@ -7,11 +19,6 @@ XClass(function (xcl, XWiki) {
   xcl.addProp("name", props.XString.create({
     "prettyName": "Extension ID",
     "size": "30"
-  }));
-  xcl.addProp("content", props.TextArea.create({
-    "prettyName": "Extension Content",
-    "rows": "10",
-    "size": "40"
   }));
   xcl.addProp("parameters", props.TextArea.create({
     "prettyName": "Extension Parameters",

@@ -13,18 +13,39 @@
  */
 var Https = require('https');
 
-var ELEMENTS = [
-    'stargazers_count',
-    'forks_count',
-    'open_issues_count',
-    'subscribers_count'
-];
+var FLOAT = function (x) {
+    var xx = Number(x);
+    if (isNaN(xx)) { throw new Error("[" + x + "] not a number"); }
+    return xx;
+};
+var INT = function (x) {
+    var xx = FLOAT(x);
+    if (xx !== Math.floor(xx)) { throw new Error("[" + x + "] not an integer"); }
+    return xx;
+};
+var BOOL = function (x) {
+    return (Boolean(x) === true) ? 1 : 0;
+};
+var DATE = function (x) {
+    return Math.floor((new Date(x)).getTime() / 1000);
+};
+
+var ELEMENTS = {
+    'open_issues_count': INT,
+    'stargazers_count':  INT,
+    'forks_count':       INT,
+    'subscribers_count': INT,
+    'created_at':        DATE,
+    'size':              INT,
+    'has_wiki':          BOOL,
+    'updated_at':        DATE
+};
 
 var parse = function (dataStr) {
     var data = JSON.parse(dataStr);
     var out = [];
-    for (var i = 0; i < ELEMENTS.length; i++) {
-        out.push({id:'github:repo:' + ELEMENTS[i], value: data[ELEMENTS[i]]});
+    for (var elem in ELEMENTS) {
+        out.push({ id:'github:repo:' + elem, value: ELEMENTS[elem](data[elem]) });
     }
     return out;
 };

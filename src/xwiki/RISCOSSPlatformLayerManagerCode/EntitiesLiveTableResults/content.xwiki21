@@ -50,13 +50,29 @@
 #end
 
 ## Build the query
+#if("$!request.layer" != "" && $request.layer == "RISCOSSPlatformLayers.OSSComponent" && $isGuest)
+#set($xwql = "SELECT doc.fullName, doc.title, entity.layer FROM Document doc, " +
+    "doc.object(RISCOSSPlatformLayerManagerCode.EntityClass) AS entity WHERE " +
+     " doc.fullName IN (:evaluatedOssComponents) AND doc.space='RISCOSSPlatformEntities' $!{filter} $!{orderBy}")
+
+#else
 #set($xwql = "SELECT doc.fullName, doc.title, entity.layer FROM Document doc, " +
     "doc.object(RISCOSSPlatformLayerManagerCode.EntityClass) AS entity WHERE " +
     "doc.space='RISCOSSPlatformEntities' $!{filter} $!{orderBy}")
+#end
 #set($query = $services.query.xwql($xwql))
 #if($request.entity && $query.bindValue("entityFilter", "${request.entity}"))#end
 #if($request.layer && $query.bindValue("layerFilter", "${request.layer}"))#end
 #if($request.creator && $query.bindValue("creatorFilter", "${request.creator}"))#end
+#if("$!request.layer" != "" && $request.layer == "RISCOSSPlatformLayers.OSSComponent" && $isGuest)
+   #set($xwql2 = "SELECT DISTINCT session.entity from Document doc, doc.object(RISCOSSPlatformRiskAnalysisManagerCode.RiskEvaluationClass) as session")
+   #set($evaluatedOssComponents = $services.query.xwql($xwql2).execute())
+   #if($evaluatedOssComponents.size() == 0)
+     #set($evaluatedOssComponents = [''])
+   #end
+   #set($discard = $query.bindValue('evaluatedOssComponents',$evaluatedOssComponents))
+#end
+
 #set($results = $query.execute())
 
 ## Count total results
